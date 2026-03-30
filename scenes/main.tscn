@@ -26,7 +26,7 @@ offset_left = 1137.0
 offset_top = 618.0
 offset_right = 1257.0
 offset_bottom = 688.0
-text = "测试按钮"
+text = "我要砍价"
 
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
