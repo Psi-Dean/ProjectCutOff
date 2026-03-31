@@ -6,19 +6,32 @@
 
 [node name="UI" type="Control" parent="." unique_id=918623074]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PriceLabel" type="Label" parent="UI" unique_id=1493065944]
-layout_mode = 0
-offset_left = 58.0
-offset_top = 11.0
-offset_right = 258.0
-offset_bottom = 111.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 522.0
+offset_top = 250.0
+offset_right = 722.0
+offset_bottom = 350.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.81960785, 0.73333335, 0.38039216, 1)
+theme_override_font_sizes/font_size = 30
 text = "价格：100"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="TestButton" type="Button" parent="UI" unique_id=1265336827]
 layout_mode = 0
@@ -26,9 +39,32 @@ offset_left = 1137.0
 offset_top = 618.0
 offset_right = 1257.0
 offset_bottom = 688.0
-text = "我要砍价"
+text = "打出"
+
+[node name="TestButton2" type="Button" parent="UI" unique_id=348189936]
+layout_mode = 0
+offset_left = 1147.0
+offset_top = 97.0
+offset_right = 1267.0
+offset_bottom = 167.0
+text = "抽牌"
+
+[node name="HandArea" type="HBoxContainer" parent="UI" unique_id=1486291893]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 138.0
+offset_top = 506.0
+offset_right = 1149.0
+offset_bottom = 693.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
 
 [connection signal="pressed" from="UI/TestButton" to="GameManager" method="_on_test_button_pressed"]
+[connection signal="pressed" from="UI/TestButton2" to="GameManager" method="_on_test_button_2_pressed"]
