@@ -6,7 +6,7 @@ var CardsData = preload("res://scripts/cards_data.gd")
 var current_price:float = 100.00
 var is_gameover:bool = false
 var card_buttons:Array = []
-var is_play:bool = false
+
 var basic_cards_deck = CardsData.BASIC_CARDS
 var cards_limited:int = 6
 var player_cards:Array = []
@@ -19,7 +19,8 @@ func _ready() -> void:
 	update_play_state()
 
 func _on_test_button_pressed() -> void:
-	play_card()
+	if(!play_card()):
+		return
 	check_game_result()
 	update_cards_display()
 	update_price_display()
@@ -52,12 +53,13 @@ func update_play_state():
 		test_button.disabled = false
 
 func play_card():
+	var _is_play
 	if (is_gameover):
-		is_play = false
-		return is_play
+		_is_play = false
+		return _is_play
 	if ( select_card_index < 0 or select_card_index >= player_cards.size()):
-		is_play = false
-		return is_play
+		_is_play = false
+		return _is_play
 	
 	var current_card = player_cards[select_card_index]
 	print("当前剩余卡牌:", player_cards.size() - 1)
@@ -69,8 +71,8 @@ func play_card():
 	select_card_index = -1
 	if (current_price < 0.00):
 		current_price = 0.00
-	is_play = true
-	return is_play
+	_is_play = true
+	return _is_play
 
 func update_cards_display():
 	# 1.清空手牌显示
