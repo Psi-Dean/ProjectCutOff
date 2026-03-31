@@ -33,7 +33,7 @@ text = "价格：100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TestButton" type="Button" parent="UI" unique_id=1265336827]
+[node name="PlayCardButton" type="Button" parent="UI" unique_id=1265336827]
 layout_mode = 0
 offset_left = 1137.0
 offset_top = 618.0
@@ -41,7 +41,7 @@ offset_right = 1257.0
 offset_bottom = 688.0
 text = "打出"
 
-[node name="TestButton2" type="Button" parent="UI" unique_id=348189936]
+[node name="DrawCardButton" type="Button" parent="UI" unique_id=348189936]
 layout_mode = 0
 offset_left = 1147.0
 offset_top = 97.0
@@ -63,8 +63,18 @@ offset_bottom = 693.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="RandomCutValue" type="Label" parent="UI" unique_id=1395943249]
+layout_mode = 0
+offset_left = 1100.0
+offset_top = 280.0
+offset_right = 1250.0
+offset_bottom = 350.0
+theme_override_colors/font_color = Color(0.9882353, 0.1882353, 0, 1)
+theme_override_font_sizes/font_size = 25
+autowrap_mode = 3
+
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
 
-[connection signal="pressed" from="UI/TestButton" to="GameManager" method="_on_test_button_pressed"]
-[connection signal="pressed" from="UI/TestButton2" to="GameManager" method="_on_test_button_2_pressed"]
+[connection signal="pressed" from="UI/PlayCardButton" to="GameManager" method="_on_play_card_button_pressed"]
+[connection signal="pressed" from="UI/DrawCardButton" to="GameManager" method="_on_draw_card_button_pressed"]

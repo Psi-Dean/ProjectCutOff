@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Project cutOff"
+config/name="Project CutOff"
 run/main_scene="uid://dt4jx5ufmbkof"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
