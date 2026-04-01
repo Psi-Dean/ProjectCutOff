@@ -2,6 +2,15 @@
 
 [ext_resource type="Script" uid="uid://cq3a8xrvy3l18" path="res://scripts/game_manager.gd" id="1_o5qli"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o5qli"]
+bg_color = Color(0.21518216, 0.21518219, 0.21518207, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sugp2"]
+bg_color = Color(0.8983909, 0.898391, 0.8983909, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0wfyh"]
+bg_color = Color(1, 1, 1, 1)
+
 [node name="Main" type="Node2D" unique_id=1718215227]
 
 [node name="UI" type="Control" parent="." unique_id=918623074]
@@ -35,11 +44,19 @@ vertical_alignment = 1
 
 [node name="PlayCardButton" type="Button" parent="UI" unique_id=1265336827]
 layout_mode = 0
-offset_left = 1137.0
+offset_left = 1154.0
 offset_top = 618.0
-offset_right = 1257.0
+offset_right = 1274.0
 offset_bottom = 688.0
 text = "打出"
+
+[node name="SkipButton" type="Button" parent="UI" unique_id=486816806]
+layout_mode = 0
+offset_left = 1022.0
+offset_top = 618.0
+offset_right = 1142.0
+offset_bottom = 688.0
+text = "跳过回合"
 
 [node name="DrawCardButton" type="Button" parent="UI" unique_id=348189936]
 layout_mode = 0
@@ -56,10 +73,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 138.0
-offset_top = 506.0
-offset_right = 1149.0
-offset_bottom = 693.0
+offset_left = 6.0
+offset_top = 523.0
+offset_right = 1017.0
+offset_bottom = 710.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -73,8 +90,33 @@ theme_override_colors/font_color = Color(0.9882353, 0.1882353, 0, 1)
 theme_override_font_sizes/font_size = 25
 autowrap_mode = 3
 
+[node name="PlayTimes" type="Label" parent="UI" unique_id=1905810208]
+layout_mode = 0
+offset_left = 1137.0
+offset_top = 500.0
+offset_right = 1257.0
+offset_bottom = 570.0
+
+[node name="NextRoundButton" type="Button" parent="UI" unique_id=1840491543]
+layout_mode = 0
+offset_left = 322.0
+offset_top = 105.0
+offset_right = 922.0
+offset_bottom = 505.0
+theme_override_colors/font_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
+theme_override_colors/font_pressed_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
+theme_override_colors/font_hover_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_o5qli")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_sugp2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_0wfyh")
+text = "开始下一回合"
+autowrap_mode = 3
+
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
 
 [connection signal="pressed" from="UI/PlayCardButton" to="GameManager" method="_on_play_card_button_pressed"]
+[connection signal="pressed" from="UI/SkipButton" to="GameManager" method="_on_skip_button_pressed"]
 [connection signal="pressed" from="UI/DrawCardButton" to="GameManager" method="_on_draw_card_button_pressed"]
+[connection signal="pressed" from="UI/NextRoundButton" to="GameManager" method="_on_next_round_pressed"]

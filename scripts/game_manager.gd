@@ -4,6 +4,10 @@ extends Node
 @onready var draw_card_button: Button = $"../UI/DrawCardButton"
 @onready var hand_area: Control = $"../UI/HandArea"
 @onready var random_cut_value: Label = $"../UI/RandomCutValue"
+@onready var play_times: Label = $"../UI/PlayTimes"
+@onready var next_round_button: Button = $"../UI/NextRoundButton"
+@onready var skip_button: Button = $"../UI/SkipButton"
+
 
 var CardsData = preload("res://scripts/cards_data.gd")
 var current_price:float = 100.00
@@ -11,26 +15,36 @@ var is_gameover:bool = false
 var card_buttons:Array = []
 
 var basic_cards_deck = CardsData.BASIC_CARDS
-var cards_limited:int = 6
+var setup_cards_limit:int = 6
+var round_cards_limit:int = 3
 var player_cards:Array = []
 var selected_card_index:int = -1
 var final_cut_value:float = 0.00
 var current_select_card = null
-var roll_times:int = 10
+var roll_times:int = 15
+var move_limit:int = 3
+var move_count:int = 0
+var is_end_turn:bool = false
 
 func _ready() -> void:
-	draw_some_cards()
+	setup_cards()
+	check_end_turn()
 	update_cards_display()
 	update_price_display()
+	update_play_times()
 	update_play_state()
 
 func _on_play_card_button_pressed() -> void:
 	if(!play_card()):
 		return
 	check_game_result()
+	check_end_turn()
+	#start_next_round()
 	update_cards_display()
+	update_play_times()
 	update_play_state()
 	await update_random_value()
+	#update_value_display()
 	update_price_display()
 	
 func update_price_display():
@@ -39,6 +53,15 @@ func update_price_display():
 		"商品价格：",
 		"%.2f" % current_price
 	]
+
+func update_play_times():
+	play_times.text = \
+	"%s%d%s" % [
+		"已出牌：",
+		move_count,
+		"张"
+	]
+	
 func check_game_result():
 	if (current_price <= 0.00):
 		print("游戏胜利!")
@@ -59,12 +82,22 @@ func select_card(index):
 func update_play_state():
 	if (is_gameover):
 		play_card_button.disabled = true
+	elif (is_end_turn):
+		play_card_button.disabled = true
 	elif (player_cards.size() == 0):
 		play_card_button.disabled = true
 	elif (selected_card_index < 0 or selected_card_index >= player_cards.size()):
 		play_card_button.disabled = true
 	else:
 		play_card_button.disabled = false
+	if (!is_gameover and is_end_turn):
+		next_round_button.visible = true
+	else:
+		next_round_button.visible = false
+	if(!is_gameover and !is_end_turn):
+		skip_button.disabled = false
+	else:
+		skip_button.disabled = true
 
 func play_card():
 	if (is_gameover):
@@ -72,6 +105,9 @@ func play_card():
 		return false
 	if ( selected_card_index < 0 or selected_card_index >= player_cards.size()):
 		print("请选择正确卡牌！")
+		return false
+	if (is_end_turn):
+		print("当前回合已结束！")
 		return false
 	
 	current_select_card = player_cards[selected_card_index]
@@ -84,6 +120,8 @@ func play_card():
 	player_cards.remove_at(selected_card_index)
 	print("当前剩余卡牌:", player_cards.size())
 	selected_card_index = -1
+	move_count += 1
+	random_cut_value.visible = true
 	if (current_price < 0.00):
 		current_price = 0.00
 	return true
@@ -108,11 +146,7 @@ func update_cards_display():
 		btn.connect("pressed",Callable(self,"select_card").bind(i))
 		# 5.加入UI
 		hand_area.add_child(btn)
-		
-func draw_some_cards():
-	for i in range(cards_limited):
-		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_cards])
+# 用于测试抽卡
 
 func update_random_value():
 	random_cut_value.text = \
@@ -128,15 +162,59 @@ func update_random_value():
 			"本次砍价：",
 			"%.2f" % rand
 		]
-		await get_tree().create_timer(0.09).timeout
+		await get_tree().create_timer(0.05).timeout
 	random_cut_value.text = \
 		"%s%s" %[
 			"本次砍价：",
 			"%.2f" % final_cut_value
 		]
 
+func update_value_display():
+	random_cut_value.visible = false
+	
+func check_end_turn():
+	if (move_count >= move_limit):
+		is_end_turn = true
+		print("回合已结束！")
+	else:
+		is_end_turn = false
+		print("已出牌：", move_count)
+		
+func start_next_round():
+	if(is_end_turn):
+		move_count = 0
+		selected_card_index = -1
+		is_end_turn = false
+		next_round_cards()
+		print("开始下一回合")
 
+# 抽卡按钮，用于测试逻辑
 func _on_draw_card_button_pressed() -> void:
-	draw_some_cards()
+	next_round_cards()
 	update_cards_display()
 	update_play_state()
+
+
+func setup_cards():
+	for i in range(setup_cards_limit):
+		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
+		player_cards.append(basic_cards_deck[random_cards])
+
+func next_round_cards():
+	for i in range(round_cards_limit):
+		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
+		player_cards.append(basic_cards_deck[random_cards])
+
+
+func _on_next_round_pressed() -> void:
+	start_next_round()
+	update_cards_display()
+	update_play_state()
+	update_play_times()
+	update_price_display()
+
+
+func _on_skip_button_pressed() -> void:
+	if(!is_gameover and !is_end_turn):
+		is_end_turn = true
+		update_play_state()
