@@ -7,10 +7,13 @@ extends Node
 @onready var play_times: Label = $"../UI/PlayTimes"
 @onready var next_round_button: Button = $"../UI/NextRoundButton"
 @onready var skip_button: Button = $"../UI/SkipButton"
+@onready var player_money: Label = $"../UI/PlayerMoney"
+@onready var pay_panel: Panel = $"../UI/PayPanel"
 
 
-var CardsData = preload("res://scripts/cards_data.gd")
+const CardsData = preload("res://scripts/cards_data.gd")
 var current_price:float = 100.00
+var current_money:float = 50.00
 var is_gameover:bool = false
 var card_buttons:Array = []
 
@@ -25,6 +28,7 @@ var roll_times:int = 15
 var move_limit:int = 3
 var move_count:int = 0
 var is_end_turn:bool = false
+var is_payable:bool = false
 
 func _ready() -> void:
 	setup_cards()
@@ -38,6 +42,7 @@ func _on_play_card_button_pressed() -> void:
 	if(!play_card()):
 		return
 	check_game_result()
+	check_player_money()
 	check_end_turn()
 	#start_next_round()
 	update_cards_display()
@@ -53,6 +58,7 @@ func update_price_display():
 		"商品价格：",
 		"%.2f" % current_price
 	]
+	player_money.text = "%s%.2f" % ["现金：", current_money]
 
 func update_play_times():
 	play_times.text = \
@@ -98,6 +104,10 @@ func update_play_state():
 		skip_button.disabled = false
 	else:
 		skip_button.disabled = true
+	if(is_payable):
+		pay_panel.visible = true
+	else:
+		pay_panel.visible = false
 
 func play_card():
 	if (is_gameover):
@@ -168,9 +178,6 @@ func update_random_value():
 			"本次砍价：",
 			"%.2f" % final_cut_value
 		]
-
-func update_value_display():
-	random_cut_value.visible = false
 	
 func check_end_turn():
 	if (move_count >= move_limit):
@@ -205,6 +212,13 @@ func next_round_cards():
 		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
 		player_cards.append(basic_cards_deck[random_cards])
 
+func check_player_money():
+	# 判断是否游戏结束、回合结束、现金是否满足
+	if (!is_gameover and !is_end_turn):
+		if(current_price > current_money):
+			is_payable = false
+		else:
+			is_payable = true
 
 func _on_next_round_pressed() -> void:
 	start_next_round()
@@ -218,3 +232,15 @@ func _on_skip_button_pressed() -> void:
 	if(!is_gameover and !is_end_turn):
 		is_end_turn = true
 		update_play_state()
+
+
+
+func _on_pay_confirm_pressed() -> void:
+	current_money -= current_price
+	update_cards_display()
+	update_play_state()
+	update_play_times()
+	update_price_display()
+
+func _on_pay_deny_pressed() -> void:
+	pay_panel.visible = false

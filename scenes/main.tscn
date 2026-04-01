@@ -42,6 +42,25 @@ text = "价格：100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="PlayerMoney" type="Label" parent="UI" unique_id=1228296304]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 1115.0
+offset_top = 12.0
+offset_right = 1265.0
+offset_bottom = 62.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.41785318, 0.814361, 0.76842237, 1)
+theme_override_font_sizes/font_size = 30
+text = "现金：100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="PlayCardButton" type="Button" parent="UI" unique_id=1265336827]
 layout_mode = 0
 offset_left = 1154.0
@@ -59,6 +78,7 @@ offset_bottom = 688.0
 text = "跳过回合"
 
 [node name="DrawCardButton" type="Button" parent="UI" unique_id=348189936]
+visible = false
 layout_mode = 0
 offset_left = 1147.0
 offset_top = 97.0
@@ -99,11 +119,12 @@ offset_right = 1257.0
 offset_bottom = 570.0
 
 [node name="NextRoundButton" type="Button" parent="UI" unique_id=1840491543]
+visible = false
 layout_mode = 0
-offset_left = 322.0
-offset_top = 105.0
-offset_right = 922.0
-offset_bottom = 505.0
+offset_left = 461.0
+offset_top = 197.0
+offset_right = 761.0
+offset_bottom = 397.0
 theme_override_colors/font_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
 theme_override_colors/font_pressed_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
 theme_override_colors/font_hover_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
@@ -114,6 +135,40 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_0wfyh")
 text = "开始下一回合"
 autowrap_mode = 3
 
+[node name="PayPanel" type="Panel" parent="UI" unique_id=1765115223]
+layout_mode = 0
+offset_left = 865.0
+offset_top = 115.0
+offset_right = 1265.0
+offset_bottom = 272.0
+
+[node name="PayText" type="Label" parent="UI/PayPanel" unique_id=1942369347]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 19.0
+offset_right = 386.0
+offset_bottom = 96.0
+text = "已达到商品可支付金额，是否购买？"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="PayConfirm" type="Button" parent="UI/PayPanel" unique_id=1072457346]
+layout_mode = 0
+offset_left = 65.0
+offset_top = 108.0
+offset_right = 155.0
+offset_bottom = 148.0
+text = "是"
+
+[node name="PayDeny" type="Button" parent="UI/PayPanel" unique_id=884944724]
+layout_mode = 0
+offset_left = 243.0
+offset_top = 108.0
+offset_right = 333.0
+offset_bottom = 148.0
+text = "否"
+
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
 
@@ -121,3 +176,5 @@ script = ExtResource("1_o5qli")
 [connection signal="pressed" from="UI/SkipButton" to="GameManager" method="_on_skip_button_pressed"]
 [connection signal="pressed" from="UI/DrawCardButton" to="GameManager" method="_on_draw_card_button_pressed"]
 [connection signal="pressed" from="UI/NextRoundButton" to="GameManager" method="_on_next_round_pressed"]
+[connection signal="pressed" from="UI/PayPanel/PayConfirm" to="GameManager" method="_on_pay_confirm_pressed"]
+[connection signal="pressed" from="UI/PayPanel/PayDeny" to="GameManager" method="_on_pay_deny_pressed"]
