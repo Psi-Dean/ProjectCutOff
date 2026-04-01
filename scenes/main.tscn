@@ -79,6 +79,7 @@ offset_right = 1017.0
 offset_bottom = 710.0
 grow_horizontal = 2
 grow_vertical = 2
+alignment = 1
 
 [node name="RandomCutValue" type="Label" parent="UI" unique_id=1395943249]
 layout_mode = 0
