@@ -220,10 +220,10 @@ func next_round_cards():
 func check_player_money():
 	# 判断是否游戏结束、回合结束、现金是否满足
 	if (!is_gameover and !is_end_turn):
-		if(current_price > goal_price && current_price > current_money):
-			is_payable = false
-		else:
+		if(current_price < goal_price && current_price < current_money):
 			is_payable = true
+		else:
+			is_payable = false
 
 func _on_next_round_pressed() -> void:
 	start_next_round()
@@ -247,6 +247,7 @@ func update_pay_confirm_text():
 func _on_pay_confirm_pressed() -> void:
 	current_money -= current_price
 	is_gameover = true
+	check_game_result()
 	update_cards_display()
 	update_play_state()
 	update_play_times()

@@ -17,6 +17,9 @@ bg_color = Color(0.1254902, 0.654902, 0.8509804, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbgi4"]
 bg_color = Color(0.1251336, 0.65457064, 0.8498899, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tefeu"]
+bg_color = Color(0.9587242, 0.24030617, 0.12652683, 1)
+
 [node name="Main" type="Node2D" unique_id=1718215227]
 
 [node name="UI" type="Control" parent="." unique_id=918623074]
@@ -168,6 +171,7 @@ offset_left = 65.0
 offset_top = 68.0
 offset_right = 250.0
 offset_bottom = 114.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_tefeu")
 text = "是"
 
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
