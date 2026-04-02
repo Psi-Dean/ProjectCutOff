@@ -9,11 +9,14 @@ extends Node
 @onready var skip_button: Button = $"../UI/SkipButton"
 @onready var player_money: Label = $"../UI/PlayerMoney"
 @onready var pay_panel: Panel = $"../UI/PayPanel"
+@onready var pay_confirm: Button = $"../UI/PayPanel/PayConfirm"
+@onready var pay_text: Label = $"../UI/PayPanel/PayText"
 
 
 const CardsData = preload("res://scripts/cards_data.gd")
 var current_price:float = 100.00
 var current_money:float = 50.00
+var goal_price:float = 40.00
 var is_gameover:bool = false
 var card_buttons:Array = []
 
@@ -104,10 +107,12 @@ func update_play_state():
 		skip_button.disabled = false
 	else:
 		skip_button.disabled = true
-	if(is_payable):
-		pay_panel.visible = true
+	if(is_payable && !is_gameover):
+		pay_confirm.disabled = false
+		update_pay_confirm_text()
 	else:
-		pay_panel.visible = false
+		pay_confirm.disabled = true
+		update_pay_confirm_text()
 
 func play_card():
 	if (is_gameover):
@@ -215,7 +220,7 @@ func next_round_cards():
 func check_player_money():
 	# 判断是否游戏结束、回合结束、现金是否满足
 	if (!is_gameover and !is_end_turn):
-		if(current_price > current_money):
+		if(current_price > goal_price && current_price > current_money):
 			is_payable = false
 		else:
 			is_payable = true
@@ -233,14 +238,16 @@ func _on_skip_button_pressed() -> void:
 		is_end_turn = true
 		update_play_state()
 
-
-
+func update_pay_confirm_text():
+	if(is_payable):
+		pay_confirm.text = "%s" % ["购买"]
+	else:
+		pay_confirm.text = "%s" % ["当前金额未达标"]
+		
 func _on_pay_confirm_pressed() -> void:
 	current_money -= current_price
+	is_gameover = true
 	update_cards_display()
 	update_play_state()
 	update_play_times()
 	update_price_display()
-
-func _on_pay_deny_pressed() -> void:
-	pay_panel.visible = false

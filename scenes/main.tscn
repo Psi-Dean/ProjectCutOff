@@ -11,6 +11,12 @@ bg_color = Color(0.8983909, 0.898391, 0.8983909, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0wfyh"]
 bg_color = Color(1, 1, 1, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jyhfs"]
+bg_color = Color(0.1254902, 0.654902, 0.8509804, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbgi4"]
+bg_color = Color(0.1251336, 0.65457064, 0.8498899, 1)
+
 [node name="Main" type="Node2D" unique_id=1718215227]
 
 [node name="UI" type="Control" parent="." unique_id=918623074]
@@ -137,18 +143,21 @@ autowrap_mode = 3
 
 [node name="PayPanel" type="Panel" parent="UI" unique_id=1765115223]
 layout_mode = 0
-offset_left = 865.0
-offset_top = 115.0
-offset_right = 1265.0
-offset_bottom = 272.0
+offset_left = 441.0
+offset_top = 12.0
+offset_right = 755.0
+offset_bottom = 133.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_jyhfs")
 
 [node name="PayText" type="Label" parent="UI/PayPanel" unique_id=1942369347]
 layout_mode = 0
-offset_left = 16.0
-offset_top = 19.0
-offset_right = 386.0
-offset_bottom = 96.0
-text = "已达到商品可支付金额，是否购买？"
+offset_left = 4.0
+offset_top = 5.0
+offset_right = 309.0
+offset_bottom = 67.0
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_tbgi4")
+text = "目标金额：40"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
@@ -156,18 +165,10 @@ autowrap_mode = 3
 [node name="PayConfirm" type="Button" parent="UI/PayPanel" unique_id=1072457346]
 layout_mode = 0
 offset_left = 65.0
-offset_top = 108.0
-offset_right = 155.0
-offset_bottom = 148.0
+offset_top = 68.0
+offset_right = 250.0
+offset_bottom = 114.0
 text = "是"
-
-[node name="PayDeny" type="Button" parent="UI/PayPanel" unique_id=884944724]
-layout_mode = 0
-offset_left = 243.0
-offset_top = 108.0
-offset_right = 333.0
-offset_bottom = 148.0
-text = "否"
 
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
@@ -177,4 +178,3 @@ script = ExtResource("1_o5qli")
 [connection signal="pressed" from="UI/DrawCardButton" to="GameManager" method="_on_draw_card_button_pressed"]
 [connection signal="pressed" from="UI/NextRoundButton" to="GameManager" method="_on_next_round_pressed"]
 [connection signal="pressed" from="UI/PayPanel/PayConfirm" to="GameManager" method="_on_pay_confirm_pressed"]
-[connection signal="pressed" from="UI/PayPanel/PayDeny" to="GameManager" method="_on_pay_deny_pressed"]
