@@ -115,7 +115,6 @@ func update_play_state():
 		update_pay_confirm_text()
 	if (is_paid):
 		pay_panel.visible = false
-		play_state == GameState.PlayState.GAME_OVER
 	else:
 		pay_panel.visible = true
 
