@@ -12,12 +12,11 @@ extends Node
 @onready var pay_confirm: Button = $"../UI/PayPanel/PayConfirm"
 @onready var pay_text: Label = $"../UI/PayPanel/PayText"
 
-
 const CardsData = preload("res://scripts/cards_data.gd")
+var play_state = GameState.PlayState.PLAYER_TURN
 var current_price:float = 100.00
 var current_money:float = 50.00
 var goal_price:float = 40.00
-var is_gameover:bool = false
 var card_buttons:Array = []
 
 var basic_cards_deck = CardsData.BASIC_CARDS
@@ -30,7 +29,6 @@ var current_select_card = null
 var roll_times:int = 15
 var move_limit:int = 3
 var move_count:int = 0
-var is_end_turn:bool = false
 var is_payable:bool = false
 var is_paid:bool = false
 
@@ -75,7 +73,7 @@ func update_play_times():
 func check_game_result():
 	if (current_price <= 0.00 or is_paid):
 		print("游戏胜利!")
-		is_gameover = true
+		play_state = GameState.PlayState.GAME_OVER
 		
 
 
@@ -91,9 +89,9 @@ func select_card(index):
 	update_play_state()
 	
 func update_play_state():
-	if (is_gameover):
+	if (play_state == GameState.PlayState.GAME_OVER):
 		play_card_button.disabled = true
-	elif (is_end_turn):
+	elif (play_state == GameState.PlayState.ROUND_END):
 		play_card_button.disabled = true
 	elif (player_cards.size() == 0):
 		play_card_button.disabled = true
@@ -101,15 +99,15 @@ func update_play_state():
 		play_card_button.disabled = true
 	else:
 		play_card_button.disabled = false
-	if (!is_gameover and is_end_turn):
+	if (play_state == GameState.PlayState.ROUND_END):
 		next_round_button.visible = true
 	else:
 		next_round_button.visible = false
-	if(!is_gameover and !is_end_turn):
+	if(play_state == GameState.PlayState.PLAYER_TURN):
 		skip_button.disabled = false
 	else:
 		skip_button.disabled = true
-	if(is_payable && !is_gameover):
+	if(is_payable && play_state == GameState.PlayState.PLAYER_TURN):
 		pay_confirm.disabled = false
 		update_pay_confirm_text()
 	else:
@@ -117,18 +115,18 @@ func update_play_state():
 		update_pay_confirm_text()
 	if (is_paid):
 		pay_panel.visible = false
-		is_gameover = true
+		play_state == GameState.PlayState.GAME_OVER
 	else:
 		pay_panel.visible = true
 
 func play_card():
-	if (is_gameover):
+	if (play_state == GameState.PlayState.GAME_OVER):
 		print("游戏已结束！")
 		return false
 	if ( selected_card_index < 0 or selected_card_index >= player_cards.size()):
 		print("请选择正确卡牌！")
 		return false
-	if (is_end_turn):
+	if (play_state == GameState.PlayState.ROUND_END):
 		print("当前回合已结束！")
 		return false
 	
@@ -193,17 +191,17 @@ func update_random_value():
 	
 func check_end_turn():
 	if (move_count >= move_limit):
-		is_end_turn = true
+		play_state = GameState.PlayState.ROUND_END
 		print("回合已结束！")
 	else:
-		is_end_turn = false
+		play_state = GameState.PlayState.PLAYER_TURN
 		print("已出牌：", move_count)
 		
 func start_next_round():
-	if(is_end_turn):
+	if(play_state == GameState.PlayState.ROUND_END):
 		move_count = 0
 		selected_card_index = -1
-		is_end_turn = false
+		play_state = GameState.PlayState.PLAYER_TURN
 		next_round_cards()
 		print("开始下一回合")
 
@@ -226,7 +224,7 @@ func next_round_cards():
 
 func check_player_money():
 	# 判断是否游戏结束、回合结束、现金是否满足
-	if (!is_gameover and !is_end_turn):
+	if (play_state == GameState.PlayState.PLAYER_TURN):
 		if(current_price <= goal_price && current_price <= current_money):
 			is_payable = true
 		else:
@@ -241,8 +239,8 @@ func _on_next_round_pressed() -> void:
 
 
 func _on_skip_button_pressed() -> void:
-	if(!is_gameover and !is_end_turn):
-		is_end_turn = true
+	if(play_state == GameState.PlayState.PLAYER_TURN):
+		play_state = GameState.PlayState.ROUND_END
 		update_play_state()
 
 func update_pay_confirm_text():
