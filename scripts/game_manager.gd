@@ -32,6 +32,7 @@ var move_limit:int = 3
 var move_count:int = 0
 var is_end_turn:bool = false
 var is_payable:bool = false
+var is_paid:bool = false
 
 func _ready() -> void:
 	setup_cards()
@@ -72,9 +73,10 @@ func update_play_times():
 	]
 	
 func check_game_result():
-	if (current_price <= 0.00):
+	if (current_price <= 0.00 or is_paid):
 		print("游戏胜利!")
 		is_gameover = true
+		
 
 
  # 预留函数，用于传入玩家选择卡牌的数组下标
@@ -113,6 +115,11 @@ func update_play_state():
 	else:
 		pay_confirm.disabled = true
 		update_pay_confirm_text()
+	if (is_paid):
+		pay_panel.visible = false
+		is_gameover = true
+	else:
+		pay_panel.visible = true
 
 func play_card():
 	if (is_gameover):
@@ -220,7 +227,7 @@ func next_round_cards():
 func check_player_money():
 	# 判断是否游戏结束、回合结束、现金是否满足
 	if (!is_gameover and !is_end_turn):
-		if(current_price < goal_price && current_price < current_money):
+		if(current_price <= goal_price && current_price <= current_money):
 			is_payable = true
 		else:
 			is_payable = false
@@ -246,7 +253,7 @@ func update_pay_confirm_text():
 		
 func _on_pay_confirm_pressed() -> void:
 	current_money -= current_price
-	is_gameover = true
+	is_paid = true
 	check_game_result()
 	update_cards_display()
 	update_play_state()
