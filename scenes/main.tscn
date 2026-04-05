@@ -20,6 +20,8 @@ bg_color = Color(0.1251336, 0.65457064, 0.8498899, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tefeu"]
 bg_color = Color(0.9587242, 0.24030617, 0.12652683, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o6xl0"]
+
 [node name="Main" type="Node2D" unique_id=1718215227]
 
 [node name="UI" type="Control" parent="." unique_id=918623074]
@@ -85,15 +87,6 @@ offset_top = 618.0
 offset_right = 1142.0
 offset_bottom = 688.0
 text = "跳过回合"
-
-[node name="DrawCardButton" type="Button" parent="UI" unique_id=348189936]
-visible = false
-layout_mode = 0
-offset_left = 1147.0
-offset_top = 97.0
-offset_right = 1267.0
-offset_bottom = 167.0
-text = "抽牌"
 
 [node name="HandArea" type="HBoxContainer" parent="UI" unique_id=1486291893]
 layout_mode = 1
@@ -174,11 +167,21 @@ offset_bottom = 114.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_tefeu")
 text = "是"
 
+[node name="GameOverLabel" type="Label" parent="." unique_id=1159921741]
+visible = false
+offset_right = 1280.0
+offset_bottom = 719.0
+mouse_filter = 0
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_o6xl0")
+text = "游戏胜利"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
 
 [connection signal="pressed" from="UI/PlayCardButton" to="GameManager" method="_on_play_card_button_pressed"]
 [connection signal="pressed" from="UI/SkipButton" to="GameManager" method="_on_skip_button_pressed"]
-[connection signal="pressed" from="UI/DrawCardButton" to="GameManager" method="_on_draw_card_button_pressed"]
 [connection signal="pressed" from="UI/NextRoundButton" to="GameManager" method="_on_next_round_pressed"]
 [connection signal="pressed" from="UI/PayPanel/PayConfirm" to="GameManager" method="_on_pay_confirm_pressed"]

@@ -1,7 +1,6 @@
 extends Node
 @onready var price_label: Label = $"../UI/PriceLabel"
 @onready var play_card_button: Button = $"../UI/PlayCardButton"
-@onready var draw_card_button: Button = $"../UI/DrawCardButton"
 @onready var hand_area: Control = $"../UI/HandArea"
 @onready var random_cut_value: Label = $"../UI/RandomCutValue"
 @onready var play_times: Label = $"../UI/PlayTimes"
@@ -11,6 +10,7 @@ extends Node
 @onready var pay_panel: Panel = $"../UI/PayPanel"
 @onready var pay_confirm: Button = $"../UI/PayPanel/PayConfirm"
 @onready var pay_text: Label = $"../UI/PayPanel/PayText"
+@onready var game_over_label: Label = $"../GameOverLabel"
 
 const CardsData = preload("res://scripts/cards_data.gd")
 var play_state = GameState.PlayState.PLAYER_TURN
@@ -31,6 +31,7 @@ var move_limit:int = 3
 var move_count:int = 0
 var is_payable:bool = false
 var is_paid:bool = false
+
 
 func _ready() -> void:
 	setup_cards()
@@ -79,6 +80,8 @@ func check_game_result():
 
  # 预留函数，用于传入玩家选择卡牌的数组下标
 func select_card(index):
+	if (play_state != GameState.PlayState.PLAYER_TURN):
+		return
 	if (index < 0 or index >= player_cards.size()):
 		return
 	if (index == selected_card_index):
@@ -89,34 +92,49 @@ func select_card(index):
 	update_play_state()
 	
 func update_play_state():
-	if (play_state == GameState.PlayState.GAME_OVER):
-		play_card_button.disabled = true
-	elif (play_state == GameState.PlayState.ROUND_END):
-		play_card_button.disabled = true
-	elif (player_cards.size() == 0):
-		play_card_button.disabled = true
-	elif (selected_card_index < 0 or selected_card_index >= player_cards.size()):
-		play_card_button.disabled = true
-	else:
-		play_card_button.disabled = false
-	if (play_state == GameState.PlayState.ROUND_END):
-		next_round_button.visible = true
-	else:
-		next_round_button.visible = false
-	if(play_state == GameState.PlayState.PLAYER_TURN):
-		skip_button.disabled = false
-	else:
-		skip_button.disabled = true
-	if(is_payable && play_state == GameState.PlayState.PLAYER_TURN):
-		pay_confirm.disabled = false
-		update_pay_confirm_text()
-	else:
-		pay_confirm.disabled = true
-		update_pay_confirm_text()
-	if (is_paid):
-		pay_panel.visible = false
-	else:
-		pay_panel.visible = true
+	#if (play_state == GameState.PlayState.GAME_OVER):
+		#play_card_button.disabled = true
+	#elif (play_state == GameState.PlayState.ROUND_END):
+		#play_card_button.disabled = true
+	#elif (!can_play_card):
+		#play_card_button.disabled = true
+	#elif (player_cards.size() == 0):
+		#play_card_button.disabled = true
+	#elif (selected_card_index < 0 or selected_card_index >= player_cards.size()):
+		#play_card_button.disabled = true
+	#else:
+		#play_card_button.disabled = false
+	# 这行判断通过引入中间变量和游戏状态的判定，收敛上面的if else
+	# 定义判断打出卡牌按钮是否可按的中间变量
+	var has_cards:bool = player_cards.size() > 0
+	var has_valid_selection:bool = selected_card_index >= 0 and selected_card_index < player_cards.size()
+	var can_play_card:bool = play_state == GameState.PlayState.PLAYER_TURN and has_cards and has_valid_selection
+	var can_skip:bool = play_state == GameState.PlayState.PLAYER_TURN
+	var show_next_round:bool = play_state == GameState.PlayState.ROUND_END
+	var can_pay:bool = is_payable and play_state != GameState.PlayState.GAME_OVER
+	play_card_button.disabled = !can_play_card
+	#if(play_state == GameState.PlayState.PLAYER_TURN):
+		#skip_button.disabled = false
+	#else:
+		#skip_button.disabled = true
+	skip_button.disabled = !can_skip
+	#if (play_state == GameState.PlayState.ROUND_END):
+		#next_round_button.visible = true
+	#else:
+		#next_round_button.visible = false
+	next_round_button.visible = show_next_round
+	#if(is_payable && play_state == GameState.PlayState.PLAYER_TURN):
+		#pay_confirm.disabled = false
+	#else:
+		#pay_confirm.disabled = true
+	pay_confirm.disabled = !can_pay
+	#if (is_paid):
+		#pay_panel.visible = false
+	#else:
+		#pay_panel.visible = true
+	pay_panel.visible = !is_paid and play_state != GameState.PlayState.GAME_OVER
+	game_over_label.visible = play_state == GameState.PlayState.GAME_OVER
+	update_pay_confirm_text()
 
 func play_card():
 	if (play_state == GameState.PlayState.GAME_OVER):
@@ -189,6 +207,8 @@ func update_random_value():
 		]
 	
 func check_end_turn():
+	if (play_state == GameState.PlayState.GAME_OVER):
+		return
 	if (move_count >= move_limit):
 		play_state = GameState.PlayState.ROUND_END
 		print("回合已结束！")
@@ -223,12 +243,10 @@ func next_round_cards():
 
 func check_player_money():
 	# 判断是否游戏结束、回合结束、现金是否满足
-	if (play_state == GameState.PlayState.PLAYER_TURN):
-		if(current_price <= goal_price && current_price <= current_money):
-			is_payable = true
-		else:
-			is_payable = false
-
+	is_payable = false
+	if(current_price <= goal_price && current_price <= current_money):
+		is_payable = true
+			
 func _on_next_round_pressed() -> void:
 	start_next_round()
 	update_cards_display()
@@ -238,9 +256,11 @@ func _on_next_round_pressed() -> void:
 
 
 func _on_skip_button_pressed() -> void:
+	selected_card_index = -1
 	if(play_state == GameState.PlayState.PLAYER_TURN):
 		play_state = GameState.PlayState.ROUND_END
 		update_play_state()
+		update_cards_display()
 
 func update_pay_confirm_text():
 	if(is_payable):
@@ -249,6 +269,7 @@ func update_pay_confirm_text():
 		pay_confirm.text = "%s" % ["当前金额未达标"]
 		
 func _on_pay_confirm_pressed() -> void:
+	selected_card_index = -1
 	current_money -= current_price
 	is_paid = true
 	check_game_result()
