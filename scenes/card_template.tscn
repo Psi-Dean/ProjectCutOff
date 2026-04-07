@@ -3,14 +3,11 @@
 [ext_resource type="Script" uid="uid://f573iqcxfcns" path="res://scripts/card_template.gd" id="1_y1fi3"]
 
 [node name="Card" type="Control" unique_id=1823589954]
+custom_minimum_size = Vector2(140, 200)
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = -1140.0
-offset_bottom = -520.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
+offset_right = 140.0
+offset_bottom = 200.0
 script = ExtResource("1_y1fi3")
 
 [node name="CardColorBG" type="ColorRect" parent="." unique_id=587988184]
@@ -65,9 +62,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -48.0
+offset_left = -44.0
 offset_top = -30.0
-offset_right = 48.0
+offset_right = 41.0
 offset_bottom = 57.0
 grow_horizontal = 2
 grow_vertical = 2
