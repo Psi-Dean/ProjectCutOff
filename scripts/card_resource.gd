@@ -1,7 +1,7 @@
 extends Resource
 class_name CardData
 
-@export var name:String = ""
+@export var card_title:String = ""
 @export var description:String = ""
 @export var min_cut_value:float = 0.00
 @export var max_cut_value:float = 0.00

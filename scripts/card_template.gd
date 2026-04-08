@@ -28,7 +28,7 @@ func _ready() -> void:
 # 获取game_manager传入的卡牌字典值和卡牌索引
 func setup_card(data:CardData, index:int):
 	card_index = index
-	name_label.text = data.name
+	name_label.text = data.card_title
 	value_label.text = data.description
 	card_img.texture = data.card_ui
 # 监听鼠标输入

@@ -151,7 +151,7 @@ func play_card():
 		return false
 	
 	current_select_card = player_cards[selected_card_index]
-	print("当前使用卡牌：", current_select_card.name)
+	print("当前使用卡牌：", current_select_card.card_title)
 	var random_value = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
 	final_cut_value = random_value
 	print("随机砍价：", random_value)

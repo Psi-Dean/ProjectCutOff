@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_ewgun")
-name = "好友助力"
+card_title = "好友助力"
 description = "邀请1名好友砍价"
 min_cut_value = 5.0
 max_cut_value = 20.0

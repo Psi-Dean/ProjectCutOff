@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_cjo8a")
-name = "我要砍价"
+card_title = "我要砍价"
 description = "减少随机金额"
 min_cut_value = 0.05
 max_cut_value = 10.0
