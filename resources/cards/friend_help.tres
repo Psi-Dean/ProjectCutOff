@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://w4iji8n76tgl"]
+
+[ext_resource type="Texture2D" uid="uid://73nnat7mxkse" path="res://assets/card/friend_help.png" id="1_3tes3"]
+[ext_resource type="Script" uid="uid://yxva4vhuhenh" path="res://scripts/card_resource.gd" id="1_ewgun"]
+
+[resource]
+script = ExtResource("1_ewgun")
+name = "好友助力"
+description = "邀请1名好友砍价"
+min_cut_value = 5.0
+max_cut_value = 20.0
+popularity_cost = 1
+card_ui = ExtResource("1_3tes3")
+metadata/_custom_type_script = "uid://yxva4vhuhenh"

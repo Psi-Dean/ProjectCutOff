@@ -13,20 +13,20 @@ extends Node
 @onready var game_over_label: Label = $"../GameOverLabel"
 
 const CardScene = preload("res://scenes/card_template.tscn")
-const CardsData = preload("res://scripts/cards_data.gd")
+#const CardsData = preload("res://scripts/cards_data.gd")
 var play_state = GameState.PlayState.PLAYER_TURN
 var current_price:float = 100.00
 var current_money:float = 50.00
 var goal_price:float = 40.00
 var card_buttons:Array = []
 
-var basic_cards_deck = CardsData.BASIC_CARDS
+var basic_cards_deck:Array[CardData] = []
 var setup_cards_limit:int = 6
 var round_cards_limit:int = 3
-var player_cards:Array = []
+var player_cards:Array[CardData] = []
 var selected_card_index:int = -1
 var final_cut_value:float = 0.00
-var current_select_card = null
+var current_select_card:CardData = null
 var roll_times:int = 15
 var move_limit:int = 3
 var move_count:int = 0
@@ -35,6 +35,7 @@ var is_paid:bool = false
 
 
 func _ready() -> void:
+	load_card_resources()
 	setup_cards()
 	check_end_turn()
 	update_cards_display()
@@ -150,8 +151,8 @@ func play_card():
 		return false
 	
 	current_select_card = player_cards[selected_card_index]
-	print("当前使用卡牌：", current_select_card["name"])
-	var random_value = randf_range(current_select_card["min_cut_value"], current_select_card["max_cut_value"])
+	print("当前使用卡牌：", current_select_card.name)
+	var random_value = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
 	final_cut_value = random_value
 	print("随机砍价：", random_value)
 	print("最终砍价：", final_cut_value)
@@ -233,7 +234,7 @@ func update_random_value():
 	]
 	await get_tree().create_timer(0.09).timeout
 	for i in range(roll_times):
-		var rand = randf_range(current_select_card["min_cut_value"], current_select_card["max_cut_value"])
+		var rand = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
 		random_cut_value.text = \
 		"%s%s" %[
 			"本次砍价：",
@@ -349,3 +350,11 @@ func rearrange_cards():
 		t.tween_property(card, "position:x", target_x, 0.2)
 		# 纵向位置重置为0，防止排列位置时出现跳动
 		#t.parallel().tween_property(card, "position:y", 0, 0.2)
+
+func load_card_resources():
+	var cards_path = "res://resources/cards/"
+	var card_res = DirAccess.get_files_at(cards_path)
+	for i in card_res:
+		if i.ends_with(".tres"):
+			var card_res_path = cards_path.path_join(i)
+			basic_cards_deck.append(load(card_res_path))

@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://bd2nraidoxxf6"]
 
 [ext_resource type="Script" uid="uid://f573iqcxfcns" path="res://scripts/card_template.gd" id="1_y1fi3"]
+[ext_resource type="FontFile" uid="uid://cn6rf5wiexr3d" path="res://assets/font/猫啃网糖圆体(测试版)0.12.ttf" id="2_rb1uo"]
+[ext_resource type="Texture2D" uid="uid://b13xxyultxcw3" path="res://assets/card/common_cut.png" id="2_u5ol4"]
 
 [node name="Card" type="Control" unique_id=1823589954]
 custom_minimum_size = Vector2(140, 200)
@@ -10,30 +12,20 @@ offset_right = 140.0
 offset_bottom = 200.0
 script = ExtResource("1_y1fi3")
 
-[node name="CardColorBG" type="ColorRect" parent="." unique_id=587988184]
+[node name="CardImg" type="TextureRect" parent="." unique_id=1418816598]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.09019608, 0.64705884, 0.99607843, 1)
-
-[node name="CardColorFT" type="ColorRect" parent="." unique_id=349466097]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = -1
+anchor_left = 0.48600003
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 0.48600003
 anchor_bottom = 0.5
-offset_left = -65.0
-offset_top = -95.0
-offset_right = 65.0
-offset_bottom = 95.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+offset_left = -68.04
+offset_top = -100.0
+offset_right = 67.96
+offset_bottom = 98.0
+texture = ExtResource("2_u5ol4")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="NameLabel" type="Label" parent="." unique_id=284479589]
 layout_mode = 1
@@ -43,14 +35,15 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -49.5
-offset_top = -71.0
+offset_top = -82.0
 offset_right = 49.5
-offset_bottom = -48.0
+offset_bottom = -59.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_shadow_color = Color(0.80082417, 0.5487058, 0.42846605, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_rb1uo")
+theme_override_font_sizes/font_size = 25
 text = "卡牌名称"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -62,14 +55,16 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -44.0
-offset_top = -30.0
-offset_right = 41.0
-offset_bottom = 57.0
+offset_left = -56.0
+offset_top = 52.0
+offset_right = 52.0
+offset_bottom = 85.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_shadow_color = Color(0.2, 0.2, 0.2, 0.4392157)
+theme_override_fonts/font = ExtResource("2_rb1uo")
+theme_override_font_sizes/font_size = 12
 text = "卡牌数值描述"
 horizontal_alignment = 1
 vertical_alignment = 1

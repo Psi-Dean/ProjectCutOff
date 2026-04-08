@@ -1,10 +1,11 @@
 extends Control
 # 声明一个自定义的singal信号
 signal card_clicked(index:int)
-@onready var card_color_bg: ColorRect = $CardColorBG
-@onready var card_color_ft: ColorRect = $CardColorFT
+
 @onready var name_label: Label = $NameLabel
 @onready var value_label: Label = $ValueLabel
+@onready var card_img: TextureRect = $CardImg
+
 
 var card_index:int = -1
 # 位移距离变量
@@ -25,10 +26,11 @@ func _ready() -> void:
 	pivot_offset = size / 2
 	
 # 获取game_manager传入的卡牌字典值和卡牌索引
-func setup_card(data:Dictionary, index:int):
+func setup_card(data:CardData, index:int):
 	card_index = index
-	name_label.text = data["name"]
-	value_label.text = data["description"]
+	name_label.text = data.name
+	value_label.text = data.description
+	card_img.texture = data.card_ui
 # 监听鼠标输入
 func _gui_input(event: InputEvent) -> void:
 	if (event is InputEventMouseButton):
@@ -39,7 +41,7 @@ func set_card_style(selected:bool):
 	is_selected = selected
 	if is_selected:
 		z_index = 1
-		card_color_bg.color = Color("fd1d44ff")
+		#card_color_bg.color = Color("fd1d44ff")
 		#if tween: 
 			#tween.kill()
 		#tween = create_tween()
@@ -48,7 +50,7 @@ func set_card_style(selected:bool):
 			#.set_ease(Tween.EASE_OUT)
 	else:
 		z_index = 0
-		card_color_bg.color = Color("17a5feff")
+		#card_color_bg.color = Color("17a5feff")
 		#if tween: 
 			#tween.kill()
 		#tween = create_tween()

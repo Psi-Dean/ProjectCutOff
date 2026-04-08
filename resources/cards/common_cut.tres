@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dokxx42uoltc4"]
+
+[ext_resource type="Texture2D" uid="uid://b13xxyultxcw3" path="res://assets/card/common_cut.png" id="1_7wmth"]
+[ext_resource type="Script" uid="uid://yxva4vhuhenh" path="res://scripts/card_resource.gd" id="1_cjo8a"]
+
+[resource]
+script = ExtResource("1_cjo8a")
+name = "我要砍价"
+description = "减少随机金额"
+min_cut_value = 0.05
+max_cut_value = 10.0
+mindset_cost = 2.5
+card_ui = ExtResource("1_7wmth")
+metadata/_custom_type_script = "uid://yxva4vhuhenh"
