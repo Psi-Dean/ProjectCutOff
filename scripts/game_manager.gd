@@ -275,12 +275,12 @@ func _on_draw_card_button_pressed() -> void:
 func setup_cards():
 	for i in range(setup_cards_limit):
 		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_cards])
+		player_cards.append(basic_cards_deck[random_cards].duplicate(true))
 
 func next_round_cards():
 	for i in range(round_cards_limit):
 		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_cards])
+		player_cards.append(basic_cards_deck[random_cards].duplicate(true))
 
 func check_player_money():
 	# 判断是否游戏结束、回合结束、现金是否满足
@@ -353,8 +353,8 @@ func rearrange_cards():
 
 func load_card_resources():
 	var cards_path = "res://resources/cards/"
-	var card_res = DirAccess.get_files_at(cards_path)
-	for i in card_res:
+	var dir = DirAccess.get_files_at(cards_path)
+	for i in dir:
 		if i.ends_with(".tres"):
 			var card_res_path = cards_path.path_join(i)
 			basic_cards_deck.append(load(card_res_path))
