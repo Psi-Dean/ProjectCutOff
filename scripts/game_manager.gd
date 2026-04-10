@@ -329,7 +329,7 @@ func rearrange_cards():
 	if _count == 0:
 		return
 	var _area_width = hand_area.size.x
-	var _card_width = 142
+	var _card_width = 141
 	var _spacing = _card_width
 	
 	# 计算起始偏移，让手牌整体居中

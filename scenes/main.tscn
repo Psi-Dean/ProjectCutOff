@@ -93,10 +93,10 @@ text = "跳过回合"
 
 [node name="HandArea" type="Container" parent="UI" unique_id=1482669060]
 layout_mode = 1
-offset_left = 6.0
-offset_top = 519.0
-offset_right = 1006.0
-offset_bottom = 706.0
+offset_left = 9.0
+offset_top = 432.0
+offset_right = 1009.0
+offset_bottom = 714.0
 
 [node name="RandomCutValue" type="Label" parent="UI" unique_id=1395943249]
 layout_mode = 0

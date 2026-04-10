@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dokxx42uoltc4"]
 
-[ext_resource type="Texture2D" uid="uid://b13xxyultxcw3" path="res://assets/card/common_cut.png" id="1_7wmth"]
+[ext_resource type="Texture2D" uid="uid://c0jaf7sejtqv8" path="res://assets/card/voucher.png" id="1_7wmth"]
 [ext_resource type="Script" uid="uid://yxva4vhuhenh" path="res://scripts/card_resource.gd" id="1_cjo8a"]
 
 [resource]
