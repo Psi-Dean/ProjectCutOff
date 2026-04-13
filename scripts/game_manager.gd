@@ -25,6 +25,7 @@ var setup_cards_limit:int = 6
 var round_cards_limit:int = 3
 var player_cards:Array[CardData] = []
 var selected_card_index:int = -1
+var hovered_card_index: int = -1
 var final_cut_value:float = 0.00
 var current_select_card:CardData = null
 var roll_times:int = 15
@@ -219,6 +220,8 @@ func update_cards_display():
 			card.set_card_style(is_selected)
 			# 6.连接信号
 			card.card_clicked.connect(self.select_card)
+			if not card.card_hovering.is_connected(self._on_card_hovered):
+				card.card_hovering.connect(self._on_card_hovered)
 	else :
 		# 如果手牌数量和手牌节点数量一致，只更新样式
 		for i in range(current_card_nodes.size()):
@@ -302,6 +305,16 @@ func _on_skip_button_pressed() -> void:
 		play_state = GameState.PlayState.ROUND_END
 		update_play_state()
 		update_cards_display()
+		
+func _on_card_hovered(index: int, is_hovered: bool):
+	if is_hovered:
+		hovered_card_index = index
+	else:
+		# 只有当前记录的卡牌取消悬停时，才重置（防止鼠标划太快状态错乱）
+		if hovered_card_index == index:
+			hovered_card_index = -1
+	# 只要悬停状态变了，立刻触发排版
+	rearrange_cards()
 
 func update_pay_confirm_text():
 	if(is_payable):
@@ -329,27 +342,50 @@ func rearrange_cards():
 	if _count == 0:
 		return
 	var _area_width = hand_area.size.x
-	var _card_width = 141
-	var _spacing = _card_width
-	
-	# 计算起始偏移，让手牌整体居中
-	var _total_content_width = min(_area_width, _count * _card_width)
-	var _start_x = (_area_width - _total_content_width) / 2
-	
-	# 计算间距
-	if _count * _card_width > _area_width:
-		_spacing = (_area_width - _card_width) / (_count - 1)
+	var _card_width = 143
+	var _scale_factor = 1.2
+	# --- 修正点 1：计算真正的膨胀差量 ---
+	var _scaled_width = _card_width * _scale_factor
+	var _half_scaled_width = _scaled_width / 2.0
+	# 先按普通模式计算一个基础间距
+	var _base_spacing = _card_width
+	if _count > 1:
+		_base_spacing = (_area_width - _card_width) / (_count - 1)
+		_base_spacing = min(_base_spacing, _card_width)
+
+	# 计算为了完全避让，邻居需要额外挪开多少距离
+	# 这个距离等于：缩放后的一半宽度 - 原始重叠状态下的间距
+	var _extra_space = 0.0
+	if hovered_card_index != -1 or selected_card_index != -1:
+	# 【关键修复】：所需安全距离 = 原始半宽 + 缩放后的半宽
+		var _safe_distance = (_card_width / 2.0) + _half_scaled_width
+		# 只有当安全距离大于当前间距时，才需要额外推开
+		_extra_space = max(0, _safe_distance - _base_spacing)
 		
-	# 开始排列
+	# --- 修正点 2：重新计算总宽度和起始点 ---
+	# 总宽度 = 基础分布宽度 + 两个半份的额外避让空间（左右各一个槽位）
+	var _total_content_width = (_base_spacing * (_count - 1)) + _card_width + (_extra_space * 2)
+	var _start_x = (_area_width - _total_content_width) / 2
+		
+	# 4.开始排列
 	for i in range(_count):
 		var card = _cards[i]
-		var target_x = _start_x + i * _spacing
-		
+		# 初始槽位位置
+		var target_x = _start_x + (i * _base_spacing)
+		# --- 修正点 3：三段式精准位移 ---
+		if hovered_card_index != -1 or selected_card_index != -1:
+			if i < hovered_card_index or i < selected_card_index:
+				# 左侧卡牌保持靠左，不需要额外位移（因为 _start_x 已经整体左移了）
+				pass
+			elif i == hovered_card_index or i == selected_card_index:
+				# 选中卡向右挪出“左侧避让区”的宽度，使其左边缘刚好贴合左邻居
+				target_x += _extra_space
+			else: #i > selected_card_index
+				# 右侧卡牌向右挪出“左侧+右侧”总共两个避让区的宽度
+				target_x += _extra_space * 2
 		# 使用Tween动画处理平滑
 		var t = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 		t.tween_property(card, "position:x", target_x, 0.2)
-		# 纵向位置重置为0，防止排列位置时出现跳动
-		#t.parallel().tween_property(card, "position:y", 0, 0.2)
 
 func load_card_resources():
 	var cards_path = "res://resources/cards/"

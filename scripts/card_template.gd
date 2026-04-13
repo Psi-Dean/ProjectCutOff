@@ -1,6 +1,7 @@
 extends Control
 # 声明一个自定义的singal信号
 signal card_clicked(index:int)
+signal card_hovering(index:int, is_hovered:bool)
 
 @onready var name_label: Label = $NameLabel
 @onready var value_label: Label = $ValueLabel
@@ -9,9 +10,9 @@ signal card_clicked(index:int)
 
 var card_index:int = -1
 # 位移距离变量
-var hover_offset:float = 30
+var hover_offset:float = 50
 # 放大比例变量
-var scale_factor: Vector2 = Vector2(1.4, 1.4)
+var scale_factor: Vector2 = Vector2(1.2, 1.2)
 # 定义补间动画变量
 var tween: Tween
 
@@ -81,6 +82,7 @@ func _on_mouse_entered():
 		#.set_ease(Tween.EASE_OUT)
 	z_index = 1
 	is_hovering = true
+	emit_signal("card_hovering", card_index, is_hovering)
 	update_card_visuals()
 	
 func _on_mouse_exited():
@@ -98,6 +100,7 @@ func _on_mouse_exited():
 		#.set_ease(Tween.EASE_OUT)
 	z_index = 0
 	is_hovering = false
+	emit_signal("card_hovering", card_index, is_hovering)
 	update_card_visuals()
 	
 func update_card_visuals():
@@ -111,8 +114,8 @@ func update_card_visuals():
 	#else:
 		#target_y = 0
 	# 采用三元逻辑写法，简化上面的if else
-	var target_y = -hover_offset if(is_hovering or is_selected) else 0
+	var target_y = -hover_offset if is_selected else 0
 	tween.tween_property(self, "position:y", target_y, 0.2).set_trans(Tween.TRANS_SINE)
 	# 逻辑2，只有选中卡牌才放大
-	var target_scale = scale_factor if is_selected else Vector2(1,1)
+	var target_scale = scale_factor if (is_hovering or is_selected) else Vector2(1,1)
 	tween.tween_property(self, "scale", target_scale, 0.2).set_trans(Tween.TRANS_SINE)

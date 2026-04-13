@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://dt4jx5ufmbkof"]
 
 [ext_resource type="Script" uid="uid://cq3a8xrvy3l18" path="res://scripts/game_manager.gd" id="1_o5qli"]
-[ext_resource type="FontFile" uid="uid://cn6rf5wiexr3d" path="res://assets/font/猫啃网糖圆体(测试版)0.12.ttf" id="2_sugp2"]
+[ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="1_sugp2"]
+[ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_jyhfs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o5qli"]
 bg_color = Color(0.21518216, 0.21518219, 0.21518207, 1)
@@ -47,7 +48,7 @@ offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.81960785, 0.73333335, 0.38039216, 1)
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("1_sugp2")
 theme_override_font_sizes/font_size = 30
 text = "价格：100"
 horizontal_alignment = 1
@@ -67,7 +68,7 @@ offset_bottom = 62.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.41785318, 0.814361, 0.76842237, 1)
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 theme_override_font_sizes/font_size = 30
 text = "现金：100"
 horizontal_alignment = 1
@@ -79,23 +80,23 @@ offset_left = 1154.0
 offset_top = 618.0
 offset_right = 1274.0
 offset_bottom = 688.0
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 text = "打出"
 
 [node name="SkipButton" type="Button" parent="UI" unique_id=486816806]
 layout_mode = 0
-offset_left = 1022.0
-offset_top = 618.0
-offset_right = 1142.0
-offset_bottom = 688.0
-theme_override_fonts/font = ExtResource("2_sugp2")
+offset_left = 1155.0
+offset_top = 533.0
+offset_right = 1275.0
+offset_bottom = 603.0
+theme_override_fonts/font = ExtResource("2_jyhfs")
 text = "跳过回合"
 
 [node name="HandArea" type="Container" parent="UI" unique_id=1482669060]
 layout_mode = 1
-offset_left = 9.0
+offset_left = 37.0
 offset_top = 432.0
-offset_right = 1009.0
+offset_right = 1117.0
 offset_bottom = 714.0
 
 [node name="RandomCutValue" type="Label" parent="UI" unique_id=1395943249]
@@ -105,7 +106,7 @@ offset_top = 280.0
 offset_right = 1250.0
 offset_bottom = 350.0
 theme_override_colors/font_color = Color(0.9882353, 0.1882353, 0, 1)
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 theme_override_font_sizes/font_size = 25
 autowrap_mode = 3
 
@@ -115,7 +116,7 @@ offset_left = 1137.0
 offset_top = 500.0
 offset_right = 1257.0
 offset_bottom = 570.0
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 
 [node name="NextRoundButton" type="Button" parent="UI" unique_id=1840491543]
 visible = false
@@ -127,7 +128,7 @@ offset_bottom = 397.0
 theme_override_colors/font_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
 theme_override_colors/font_pressed_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
 theme_override_colors/font_hover_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_o5qli")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_sugp2")
@@ -149,7 +150,7 @@ offset_left = 4.0
 offset_top = 5.0
 offset_right = 309.0
 offset_bottom = 67.0
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_tbgi4")
 text = "目标金额：40"
@@ -163,7 +164,7 @@ offset_left = 65.0
 offset_top = 68.0
 offset_right = 250.0
 offset_bottom = 114.0
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("2_jyhfs")
 theme_override_styles/normal = SubResource("StyleBoxFlat_tefeu")
 text = "是"
 
@@ -172,7 +173,7 @@ visible = false
 offset_right = 1280.0
 offset_bottom = 719.0
 mouse_filter = 0
-theme_override_fonts/font = ExtResource("2_sugp2")
+theme_override_fonts/font = ExtResource("1_sugp2")
 theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBoxFlat_o6xl0")
 text = "游戏胜利"

@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://bd2nraidoxxf6"]
 
 [ext_resource type="Script" uid="uid://f573iqcxfcns" path="res://scripts/card_template.gd" id="1_y1fi3"]
-[ext_resource type="FontFile" uid="uid://cn6rf5wiexr3d" path="res://assets/font/猫啃网糖圆体(测试版)0.12.ttf" id="2_rb1uo"]
-[ext_resource type="Texture2D" uid="uid://mlfuinjqb3gv" path="res://assets/card/voucher1.png" id="2_u5ol4"]
+[ext_resource type="Texture2D" uid="uid://b0nu62s4bbsbl" path="res://assets/card/voucher1.png" id="2_u5ol4"]
+[ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="3_jwumr"]
+[ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="4_clgy5"]
 
 [node name="Card" type="Control" unique_id=1823589954]
 custom_minimum_size = Vector2(140, 282)
@@ -34,7 +35,7 @@ offset_bottom = -62.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.023529412, 0.078431375, 0.11764706, 1)
-theme_override_fonts/font = ExtResource("2_rb1uo")
+theme_override_fonts/font = ExtResource("3_jwumr")
 theme_override_font_sizes/font_size = 20
 text = "卡牌名称"
 horizontal_alignment = 1
@@ -54,8 +55,10 @@ offset_bottom = 105.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/font_shadow_color = Color(0.2, 0.2, 0.2, 0.4392157)
-theme_override_fonts/font = ExtResource("2_rb1uo")
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 0)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("4_clgy5")
 theme_override_font_sizes/font_size = 10
 text = "卡牌数值描述"
 horizontal_alignment = 1
