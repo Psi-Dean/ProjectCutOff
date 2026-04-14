@@ -10,13 +10,13 @@ custom_minimum_size = Vector2(140, 282)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 140.0
-offset_bottom = 283.0
+offset_bottom = 282.0
 script = ExtResource("1_y1fi3")
 
 [node name="CardImg" type="TextureRect" parent="." unique_id=1418816598]
 layout_mode = 1
 offset_right = 140.0
-offset_bottom = 283.0
+offset_bottom = 282.8
 texture = ExtResource("2_u5ol4")
 expand_mode = 5
 stretch_mode = 5

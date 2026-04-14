@@ -1,6 +1,6 @@
-extends Node
+﻿extends Node
+
 @onready var price_label: Label = $"../UI/PriceLabel"
-@onready var play_card_button: Button = $"../UI/PlayCardButton"
 @onready var hand_area: Control = $"../UI/HandArea"
 @onready var random_cut_value: Label = $"../UI/RandomCutValue"
 @onready var play_times: Label = $"../UI/PlayTimes"
@@ -13,384 +13,391 @@ extends Node
 @onready var game_over_label: Label = $"../GameOverLabel"
 
 const CardScene = preload("res://scenes/card_template.tscn")
-#const CardsData = preload("res://scripts/cards_data.gd")
-var play_state = GameState.PlayState.PLAYER_TURN
-var current_price:float = 100.00
-var current_money:float = 50.00
-var goal_price:float = 40.00
-var card_buttons:Array = []
 
-var basic_cards_deck:Array[CardData] = []
-var setup_cards_limit:int = 6
-var round_cards_limit:int = 3
-var player_cards:Array[CardData] = []
-var selected_card_index:int = -1
-var hovered_card_index: int = -1
-var final_cut_value:float = 0.00
-var current_select_card:CardData = null
-var roll_times:int = 15
-var move_limit:int = 3
-var move_count:int = 0
-var is_payable:bool = false
-var is_paid:bool = false
+var play_state = GameState.PlayState.PLAYER_TURN
+var current_price: float = 100.00
+var current_money: float = 50.00
+var goal_price: float = 40.00
+
+var basic_cards_deck: Array[CardData] = []
+var setup_cards_limit: int = 6
+var round_cards_limit: int = 3
+var player_cards: Array[CardData] = []
+var final_cut_value: float = 0.00
+var current_select_card: CardData = null
+var roll_times: int = 15
+var move_limit: int = 3
+var move_count: int = 0
+var is_payable: bool = false
+var is_paid: bool = false
+
+var dragging_card: Control = null
+var is_playing_card: bool = false
 
 
 func _ready() -> void:
 	load_card_resources()
 	setup_cards()
+	random_cut_value.visible = false
+	check_player_money()
 	check_end_turn()
 	update_cards_display()
 	update_price_display()
 	update_play_times()
 	update_play_state()
 
-func _on_play_card_button_pressed() -> void:
-	if(!play_card()):
+
+# ==================== 卡牌出牌逻辑 ====================
+
+func _on_card_play_requested(card: Control) -> void:
+	if is_playing_card:
+		card.cancel_play()
 		return
+	if not _can_cards_interact():
+		card.cancel_play()
+		return
+
+	is_playing_card = true
+	_apply_cards_interactable()
+
+	var index = _find_card_index(card)
+	if index < 0:
+		is_playing_card = false
+		card.cancel_play()
+		_apply_cards_interactable()
+		return
+
+	current_select_card = card.card_data
+	final_cut_value = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
+	current_price = maxf(0.0, current_price - final_cut_value)
+
+	player_cards.remove_at(index)
+	move_count += 1
+	random_cut_value.visible = true
+	dragging_card = null
+
+	# 卡牌自身执行溶解动画并 queue_free，这里只处理手牌数据和布局
+	await get_tree().create_timer(0.1).timeout
+	_refresh_card_indices()
+	rearrange_cards()
+
 	check_game_result()
 	check_player_money()
 	check_end_turn()
-	#start_next_round()
-	update_cards_display()
 	update_play_times()
 	update_play_state()
-	await update_random_value()
-	#update_value_display()
 	update_price_display()
-	
-func update_price_display():
-	price_label.text = \
-	"%s%s" % [
-		"商品价格：",
-		"%.2f" % current_price
-	]
-	player_money.text = "%s%.2f" % ["现金：", current_money]
+	_show_roll_animation()
 
-func update_play_times():
-	play_times.text = \
-	"%s%d%s" % [
-		"已出牌：",
-		move_count,
-		"张"
-	]
-	
-func check_game_result():
-	if (current_price <= 0.00 or is_paid):
-		print("游戏胜利!")
-		play_state = GameState.PlayState.GAME_OVER
-		
+	is_playing_card = false
+	_apply_cards_interactable()
 
 
- # 预留函数，用于传入玩家选择卡牌的数组下标
-func select_card(index):
-	if (play_state != GameState.PlayState.PLAYER_TURN):
+func _on_card_drag_started(card: Control) -> void:
+	if not _can_cards_interact():
 		return
-	if (index < 0 or index >= player_cards.size()):
+	dragging_card = card
+	_apply_cards_interactable()
+	rearrange_cards()
+
+
+func _on_card_drag_ended(card: Control) -> void:
+	if dragging_card == card:
+		dragging_card = null
+
+	# 拖到销毁区时，不参与手牌重排，保留原地销毁表现
+	if _is_destroying_card(card):
+		rearrange_cards()
+		_refresh_card_indices()
+		_apply_cards_interactable()
 		return
-	if (index == selected_card_index):
-		selected_card_index = -1
+
+	# 放回手牌区时，按鼠标落点插入数组中间
+	_insert_card_by_drop_position(card)
+	_rebuild_player_cards_from_nodes()
+	rearrange_cards()
+	_apply_cards_interactable()
+
+
+func _show_roll_animation() -> void:
+	random_cut_value.text = "本次砍价：%.2f" % 0.00
+	var t = create_tween()
+	for _i in range(roll_times):
+		t.tween_callback(func():
+			if current_select_card:
+				random_cut_value.text = "本次砍价：%.2f" % randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
+		)
+		t.tween_interval(0.05)
+	t.tween_callback(func(): random_cut_value.text = "本次砍价：%.2f" % final_cut_value)
+
+
+# ==================== 手牌显示 ====================
+
+func update_cards_display() -> void:
+	var current_nodes = _get_card_nodes()
+	if current_nodes.size() != player_cards.size():
+		for child in current_nodes:
+			child.queue_free()
+		for i in range(player_cards.size()):
+			var card = CardScene.instantiate()
+			hand_area.add_child(card)
+			card.setup_card(player_cards[i], i)
+			if not card.card_play_requested.is_connected(_on_card_play_requested):
+				card.card_play_requested.connect(_on_card_play_requested)
+			if not card.card_drag_started.is_connected(_on_card_drag_started):
+				card.card_drag_started.connect(_on_card_drag_started)
+			if not card.card_drag_ended.is_connected(_on_card_drag_ended):
+				card.card_drag_ended.connect(_on_card_drag_ended)
 	else:
-		selected_card_index = index
-	print("选择卡牌：", selected_card_index)
-	update_cards_display()
-	update_play_state()
-	
-func update_play_state():
-	#if (play_state == GameState.PlayState.GAME_OVER):
-		#play_card_button.disabled = true
-	#elif (play_state == GameState.PlayState.ROUND_END):
-		#play_card_button.disabled = true
-	#elif (!can_play_card):
-		#play_card_button.disabled = true
-	#elif (player_cards.size() == 0):
-		#play_card_button.disabled = true
-	#elif (selected_card_index < 0 or selected_card_index >= player_cards.size()):
-		#play_card_button.disabled = true
-	#else:
-		#play_card_button.disabled = false
-	# 这行判断通过引入中间变量和游戏状态的判定，收敛上面的if else
-	# 定义判断打出卡牌按钮是否可按的中间变量
-	var has_cards:bool = player_cards.size() > 0
-	var has_valid_selection:bool = selected_card_index >= 0 and selected_card_index < player_cards.size()
-	var can_play_card:bool = play_state == GameState.PlayState.PLAYER_TURN and has_cards and has_valid_selection
-	var can_skip:bool = play_state == GameState.PlayState.PLAYER_TURN
-	var show_next_round:bool = play_state == GameState.PlayState.ROUND_END
-	var can_pay:bool = is_payable and play_state != GameState.PlayState.GAME_OVER
-	play_card_button.disabled = !can_play_card
-	#if(play_state == GameState.PlayState.PLAYER_TURN):
-		#skip_button.disabled = false
-	#else:
-		#skip_button.disabled = true
-	skip_button.disabled = !can_skip
-	#if (play_state == GameState.PlayState.ROUND_END):
-		#next_round_button.visible = true
-	#else:
-		#next_round_button.visible = false
+		_refresh_card_indices()
+
+	rearrange_cards()
+	_apply_cards_interactable()
+
+
+func _is_destroying_card(card: Control) -> bool:
+	return card != null and card.has_method("is_destroying") and card.is_destroying()
+
+
+func _get_card_nodes() -> Array:
+	var result: Array = []
+	for child in hand_area.get_children():
+		if not child.is_queued_for_deletion() and child.has_method("setup_card"):
+			if not _is_destroying_card(child):
+				result.append(child)
+	return result
+
+
+func _get_active_cards() -> Array:
+	var result: Array = []
+	for child in _get_card_nodes():
+		if child != dragging_card:
+			result.append(child)
+	return result
+
+
+func _refresh_card_indices() -> void:
+	var cards = _get_card_nodes()
+	for i in range(cards.size()):
+		cards[i].card_index = i
+
+
+func _rebuild_player_cards_from_nodes() -> void:
+	player_cards.clear()
+	var cards = _get_card_nodes()
+	for i in range(cards.size()):
+		cards[i].card_index = i
+		player_cards.append(cards[i].card_data)
+
+
+func _find_card_index(card: Control) -> int:
+	var index = card.card_index
+	if index >= 0 and index < player_cards.size() and player_cards[index] == card.card_data:
+		return index
+	return player_cards.find(card.card_data)
+
+
+func _insert_card_by_drop_position(card: Control) -> void:
+	if not card:
+		return
+	var cards = _get_card_nodes()
+	if not cards.has(card) or cards.size() <= 1:
+		return
+
+	var others: Array = []
+	for c in cards:
+		if c != card:
+			others.append(c)
+	others.sort_custom(func(a, b): return (a.global_position.x + a.size.x * 0.5) < (b.global_position.x + b.size.x * 0.5))
+
+	var drop_x = card.global_position.x + card.size.x * 0.5
+	var insert_index = 0
+	for other in others:
+		var center_x = other.global_position.x + other.size.x * 0.5
+		if drop_x > center_x:
+			insert_index += 1
+
+	_move_card_node_to_insert_index(card, insert_index)
+
+
+func _move_card_node_to_insert_index(card: Control, insert_index: int) -> void:
+	var orderable: Array = []
+	for child in hand_area.get_children():
+		if not child.is_queued_for_deletion() and child.has_method("setup_card") and not _is_destroying_card(child):
+			if child != card:
+				orderable.append(child)
+
+	insert_index = clampi(insert_index, 0, orderable.size())
+	if insert_index < orderable.size():
+		var anchor = orderable[insert_index]
+		hand_area.move_child(card, anchor.get_index())
+		return
+
+	var last_index = -1
+	for child in hand_area.get_children():
+		if not child.is_queued_for_deletion() and child.has_method("setup_card") and not _is_destroying_card(child):
+			if child != card:
+				last_index = child.get_index()
+
+	if last_index < 0:
+		hand_area.move_child(card, 0)
+	else:
+		hand_area.move_child(card, last_index + 1)
+
+
+# ==================== 手牌布局 ====================
+
+func rearrange_cards() -> void:
+	var cards = _get_active_cards()
+	var count = cards.size()
+	if count == 0:
+		return
+
+	var area_width = hand_area.size.x
+	var card_width = 120.0
+
+	# 卡牌过多时允许适度重叠
+	var max_spacing = card_width * 1.1
+	var spacing = max_spacing
+	if count > 1:
+		spacing = (area_width - card_width) / (count - 1)
+		spacing = min(spacing, max_spacing)
+
+	# 居中排列
+	var total_width = spacing * (count - 1) + card_width
+	var start_x = (area_width - total_width) / 2.0
+
+	for i in range(count):
+		var card = cards[i]
+		var target_x = start_x + i * spacing
+		var target_pos = Vector2(target_x, 10.0)
+		var t = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+		t.tween_property(card, "position", target_pos, 0.35)
+
+
+# ==================== 游戏状态 ====================
+
+func update_price_display() -> void:
+	price_label.text = "商品价格：%.2f" % current_price
+	player_money.text = "现金：%.2f" % current_money
+	pay_text.text = "目标金额：%.2f" % goal_price
+
+
+func update_play_times() -> void:
+	play_times.text = "已出牌：%d张" % move_count
+
+
+func check_game_result() -> void:
+	if current_price <= 0.00 or is_paid:
+		play_state = GameState.PlayState.GAME_OVER
+
+
+func check_end_turn() -> void:
+	if play_state == GameState.PlayState.GAME_OVER:
+		return
+	if move_count >= move_limit:
+		play_state = GameState.PlayState.ROUND_END
+	else:
+		play_state = GameState.PlayState.PLAYER_TURN
+
+
+func check_player_money() -> void:
+	is_payable = false
+	if not is_paid and current_price <= goal_price and current_price <= current_money:
+		is_payable = true
+
+
+func update_play_state() -> void:
+	var can_skip = play_state == GameState.PlayState.PLAYER_TURN and not is_playing_card
+	var show_next_round = play_state == GameState.PlayState.ROUND_END
+	var can_pay = is_payable and play_state != GameState.PlayState.GAME_OVER and not is_paid
+
+	skip_button.disabled = not can_skip
 	next_round_button.visible = show_next_round
-	#if(is_payable && play_state == GameState.PlayState.PLAYER_TURN):
-		#pay_confirm.disabled = false
-	#else:
-		#pay_confirm.disabled = true
-	pay_confirm.disabled = !can_pay
-	#if (is_paid):
-		#pay_panel.visible = false
-	#else:
-		#pay_panel.visible = true
-	pay_panel.visible = !is_paid and play_state != GameState.PlayState.GAME_OVER
+	pay_confirm.disabled = not can_pay
+	pay_panel.visible = not is_paid and play_state != GameState.PlayState.GAME_OVER
 	game_over_label.visible = play_state == GameState.PlayState.GAME_OVER
 	update_pay_confirm_text()
+	_apply_cards_interactable()
 
-func play_card():
-	if (play_state == GameState.PlayState.GAME_OVER):
-		print("游戏已结束！")
-		return false
-	if ( selected_card_index < 0 or selected_card_index >= player_cards.size()):
-		print("请选择正确卡牌！")
-		return false
-	if (play_state == GameState.PlayState.ROUND_END):
-		print("当前回合已结束！")
-		return false
-	
-	current_select_card = player_cards[selected_card_index]
-	print("当前使用卡牌：", current_select_card.card_title)
-	var random_value = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
-	final_cut_value = random_value
-	print("随机砍价：", random_value)
-	print("最终砍价：", final_cut_value)
-	current_price -= final_cut_value
-	print("当前剩余卡牌:", player_cards.size())
-	move_count += 1
-	random_cut_value.visible = true
-	# 1. 先拿到对应的节点
-	var card_node = hand_area.get_child(selected_card_index)
-	# 2. 删掉数据
-	player_cards.remove_at(selected_card_index)
-	# 3. 节点删除标记，延迟生效，在帧结束之后执行删除
-	card_node.queue_free()
-	# 4. 关键：重置选中索引并重新排列剩余卡牌
-	selected_card_index = -1
-	rearrange_cards() # 这样剩下的牌会平滑地滑过去填补空缺
-	if (current_price < 0.00):
-		current_price = 0.00
-	return true
-	
-func update_cards_display():
-	# 第一版手牌显示，通过button创建
-	# 1.清空手牌显示
-	#for child in hand_area.get_children():
-		#child.queue_free()
-	# 2.遍历玩家手牌
-	#for i in range(player_cards.size()):
-		#var _card = player_cards[i]
-		# 3.创建按钮
-		#var btn = Button.new()
-		#if (i == selected_card_index):
-			#btn.self_modulate = Color.LIGHT_GREEN
-		#else:
-			#btn.self_modulate = Color.WHITE
-		#btn.text = _card["name"]
-		#btn.custom_minimum_size = Vector2(140, 200)
-		# 4.绑定按钮与卡牌索引
-		#btn.set_meta("card_index", i)
-		#btn.connect("pressed",Callable(self,"select_card").bind(i))
-		# 5.加入UI
-		#hand_area.add_child(btn)
-	# 第二版手牌显示，使用独立场景创建卡牌，获取点击卡牌的数组下标发送信号
-	# 获取当前场景中已有卡牌数量
-	# 提出已加入删除标记的节点
-	var all_children = hand_area.get_children()
-	var current_card_nodes = []
-	for child in all_children:
-		if not child.is_queued_for_deletion():
-			current_card_nodes.append(child)
-	# 只有玩家卡牌数与场景节点数不一致时，执行清空，并重新生成
-	if current_card_nodes.size() != player_cards.size():
-		# 1.清空手牌显示
-		for child in hand_area.get_children():
-			child.queue_free()
-		# 2.遍历玩家手牌
-		for i in range(player_cards.size()):
-			# 3.创建卡牌
-			var card = CardScene.instantiate()
-			var is_selected:bool = (i == selected_card_index)
-			# 4.加入UI
-			hand_area.add_child(card)
-			# 5.接入数据
-			card.setup_card(player_cards[i], i)
-			card.set_card_style(is_selected)
-			# 6.连接信号
-			card.card_clicked.connect(self.select_card)
-			if not card.card_hovering.is_connected(self._on_card_hovered):
-				card.card_hovering.connect(self._on_card_hovered)
-	else :
-		# 如果手牌数量和手牌节点数量一致，只更新样式
-		for i in range(current_card_nodes.size()):
-			var _card = current_card_nodes[i]
-			_card.setup_card(player_cards[i], i)
-			_card.set_card_style(i == selected_card_index)
-	rearrange_cards()
-func update_random_value():
-	random_cut_value.text = \
-	"%s%s" % [
-		"本次砍价：",
-		"%.2f" % 0.00
-	]
-	await get_tree().create_timer(0.09).timeout
-	for i in range(roll_times):
-		var rand = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
-		random_cut_value.text = \
-		"%s%s" %[
-			"本次砍价：",
-			"%.2f" % rand
-		]
-		await get_tree().create_timer(0.05).timeout
-	random_cut_value.text = \
-		"%s%s" %[
-			"本次砍价：",
-			"%.2f" % final_cut_value
-		]
-	
-func check_end_turn():
-	if (play_state == GameState.PlayState.GAME_OVER):
-		return
-	if (move_count >= move_limit):
-		play_state = GameState.PlayState.ROUND_END
-		print("回合已结束！")
+
+func update_pay_confirm_text() -> void:
+	if is_payable:
+		pay_confirm.text = "购买"
 	else:
-		play_state = GameState.PlayState.PLAYER_TURN
-		print("已出牌：", move_count)
-		
-func start_next_round():
-	if(play_state == GameState.PlayState.ROUND_END):
-		move_count = 0
-		selected_card_index = -1
-		play_state = GameState.PlayState.PLAYER_TURN
-		next_round_cards()
-		print("开始下一回合")
-
-# 抽卡按钮，用于测试逻辑
-func _on_draw_card_button_pressed() -> void:
-	next_round_cards()
-	update_cards_display()
-	update_play_state()
+		pay_confirm.text = "当前金额未达标"
 
 
-func setup_cards():
-	for i in range(setup_cards_limit):
-		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_cards].duplicate(true))
+func _can_cards_interact() -> bool:
+	return play_state == GameState.PlayState.PLAYER_TURN and not is_playing_card and not is_paid
 
-func next_round_cards():
-	for i in range(round_cards_limit):
-		var random_cards = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_cards].duplicate(true))
 
-func check_player_money():
-	# 判断是否游戏结束、回合结束、现金是否满足
-	is_payable = false
-	if(current_price <= goal_price && current_price <= current_money):
-		is_payable = true
-			
-func _on_next_round_pressed() -> void:
-	start_next_round()
-	update_cards_display()
-	update_play_state()
-	update_play_times()
-	update_price_display()
+func _apply_cards_interactable() -> void:
+	var can_interact = _can_cards_interact()
+	if not can_interact:
+		dragging_card = null
+	for card in _get_card_nodes():
+		var enabled = can_interact and (dragging_card == null or card == dragging_card)
+		card.set_interactable(enabled)
 
+
+# ==================== 按钮事件 ====================
 
 func _on_skip_button_pressed() -> void:
-	selected_card_index = -1
-	if(play_state == GameState.PlayState.PLAYER_TURN):
+	if play_state == GameState.PlayState.PLAYER_TURN and not is_playing_card:
 		play_state = GameState.PlayState.ROUND_END
 		update_play_state()
-		update_cards_display()
-		
-func _on_card_hovered(index: int, is_hovered: bool):
-	if is_hovered:
-		hovered_card_index = index
-	else:
-		# 只有当前记录的卡牌取消悬停时，才重置（防止鼠标划太快状态错乱）
-		if hovered_card_index == index:
-			hovered_card_index = -1
-	# 只要悬停状态变了，立刻触发排版
-	rearrange_cards()
 
-func update_pay_confirm_text():
-	if(is_payable):
-		pay_confirm.text = "%s" % ["购买"]
-	else:
-		pay_confirm.text = "%s" % ["当前金额未达标"]
-		
+
+func _on_next_round_pressed() -> void:
+	if play_state == GameState.PlayState.ROUND_END:
+		move_count = 0
+		play_state = GameState.PlayState.PLAYER_TURN
+		next_round_cards()
+		check_player_money()
+		update_cards_display()
+		update_play_state()
+		update_play_times()
+		update_price_display()
+
+
 func _on_pay_confirm_pressed() -> void:
-	selected_card_index = -1
+	if not is_payable:
+		return
 	current_money -= current_price
 	is_paid = true
 	check_game_result()
-	update_cards_display()
+	check_player_money()
 	update_play_state()
 	update_play_times()
 	update_price_display()
 
-func rearrange_cards():
-	var all_children = hand_area.get_children()
-	var _cards = []
-	for child in all_children:
-		if not child.is_queued_for_deletion():
-			_cards.append(child)
-	var _count = _cards.size()
-	if _count == 0:
+
+# ==================== 卡牌池 ====================
+
+func setup_cards() -> void:
+	if basic_cards_deck.is_empty():
 		return
-	var _area_width = hand_area.size.x
-	var _card_width = 143
-	var _scale_factor = 1.2
-	# --- 修正点 1：计算真正的膨胀差量 ---
-	var _scaled_width = _card_width * _scale_factor
-	var _half_scaled_width = _scaled_width / 2.0
-	# 先按普通模式计算一个基础间距
-	var _base_spacing = _card_width
-	if _count > 1:
-		_base_spacing = (_area_width - _card_width) / (_count - 1)
-		_base_spacing = min(_base_spacing, _card_width)
+	for _i in range(setup_cards_limit):
+		var random_idx = randi_range(0, basic_cards_deck.size() - 1)
+		player_cards.append(basic_cards_deck[random_idx].duplicate(true))
 
-	# 计算为了完全避让，邻居需要额外挪开多少距离
-	# 这个距离等于：缩放后的一半宽度 - 原始重叠状态下的间距
-	var _extra_space = 0.0
-	if hovered_card_index != -1 or selected_card_index != -1:
-	# 【关键修复】：所需安全距离 = 原始半宽 + 缩放后的半宽
-		var _safe_distance = (_card_width / 2.0) + _half_scaled_width
-		# 只有当安全距离大于当前间距时，才需要额外推开
-		_extra_space = max(0, _safe_distance - _base_spacing)
-		
-	# --- 修正点 2：重新计算总宽度和起始点 ---
-	# 总宽度 = 基础分布宽度 + 两个半份的额外避让空间（左右各一个槽位）
-	var _total_content_width = (_base_spacing * (_count - 1)) + _card_width + (_extra_space * 2)
-	var _start_x = (_area_width - _total_content_width) / 2
-		
-	# 4.开始排列
-	for i in range(_count):
-		var card = _cards[i]
-		# 初始槽位位置
-		var target_x = _start_x + (i * _base_spacing)
-		# --- 修正点 3：三段式精准位移 ---
-		if hovered_card_index != -1 or selected_card_index != -1:
-			if i < hovered_card_index or i < selected_card_index:
-				# 左侧卡牌保持靠左，不需要额外位移（因为 _start_x 已经整体左移了）
-				pass
-			elif i == hovered_card_index or i == selected_card_index:
-				# 选中卡向右挪出“左侧避让区”的宽度，使其左边缘刚好贴合左邻居
-				target_x += _extra_space
-			else: #i > selected_card_index
-				# 右侧卡牌向右挪出“左侧+右侧”总共两个避让区的宽度
-				target_x += _extra_space * 2
-		# 使用Tween动画处理平滑
-		var t = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-		t.tween_property(card, "position:x", target_x, 0.2)
 
-func load_card_resources():
+func next_round_cards() -> void:
+	if basic_cards_deck.is_empty():
+		return
+	for _i in range(round_cards_limit):
+		var random_idx = randi_range(0, basic_cards_deck.size() - 1)
+		player_cards.append(basic_cards_deck[random_idx].duplicate(true))
+
+
+func load_card_resources() -> void:
 	var cards_path = "res://resources/cards/"
-	var dir = DirAccess.get_files_at(cards_path)
-	for i in dir:
-		if i.ends_with(".tres"):
-			var card_res_path = cards_path.path_join(i)
-			basic_cards_deck.append(load(card_res_path))
+	var files = DirAccess.get_files_at(cards_path)
+	files.sort()
+	for file_name in files:
+		if file_name.ends_with(".tres"):
+			var card_res_path = cards_path.path_join(file_name)
+			var data = load(card_res_path)
+			if data is CardData:
+				basic_cards_deck.append(data)

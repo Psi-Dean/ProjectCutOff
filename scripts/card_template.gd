@@ -1,121 +1,189 @@
 extends Control
-# 声明一个自定义的singal信号
-signal card_clicked(index:int)
-signal card_hovering(index:int, is_hovered:bool)
+
+signal card_play_requested(card: Control)
+signal card_drag_started(card: Control)
+signal card_drag_ended(card: Control)
 
 @onready var name_label: Label = $NameLabel
 @onready var value_label: Label = $ValueLabel
 @onready var card_img: TextureRect = $CardImg
 
+const DISSOLVE_SHADER = preload("res://assets/shader/dissolve.gdshader")
+const IdleStateScript = preload("res://scripts/card_states/idle.gd")
+const HoveredStateScript = preload("res://scripts/card_states/hovered.gd")
+const DraggingStateScript = preload("res://scripts/card_states/dragging.gd")
+const DestroyStateScript = preload("res://scripts/card_states/destroy.gd")
+const NoInteractStateScript = preload("res://scripts/card_states/no_interact.gd")
 
-var card_index:int = -1
-# 位移距离变量
-var hover_offset:float = 50
-# 放大比例变量
-var scale_factor: Vector2 = Vector2(1.2, 1.2)
-# 定义补间动画变量
-var tween: Tween
+var card_index: int = -1
+var card_data: CardData = null
+var state_machine: CutoffStateMachine
+var interactable: bool = true
+var scale_tween: Tween
 
-var is_selected: bool = false
-var is_hovering: bool = false
 
 func _ready() -> void:
-	mouse_entered.connect(self._on_mouse_entered)
-	mouse_exited.connect(self._on_mouse_exited)
-	# Godot中所有节点的默认轴心点(pivot)都在左上角(0,0)
-	# 将卡牌轴心点设置为custom_minimum_size的一半，即中心点
-	pivot_offset = size / 2
-	
-# 获取game_manager传入的卡牌字典值和卡牌索引
-func setup_card(data:CardData, index:int):
+	pivot_offset = size / 2.0
+
+	# 初始化溶解材质
+	var mat = ShaderMaterial.new()
+	mat.shader = DISSOLVE_SHADER
+	mat.set("shader_parameter/dissolve_value", 1.0)
+	card_img.material = mat
+
+	_setup_state_machine()
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+
+
+func _setup_state_machine() -> void:
+	state_machine = CutoffStateMachine.new()
+	state_machine.name = "StateMachine"
+	add_child(state_machine)
+
+	var idle_node = IdleStateScript.new()
+	idle_node.name = "Idle"
+	state_machine.add_child(idle_node)
+
+	var hovered_node = HoveredStateScript.new()
+	hovered_node.name = "Hovered"
+	state_machine.add_child(hovered_node)
+
+	var dragging_node = DraggingStateScript.new()
+	dragging_node.name = "Dragging"
+	state_machine.add_child(dragging_node)
+
+	var destroy_node = DestroyStateScript.new()
+	destroy_node.name = "Destroy"
+	state_machine.add_child(destroy_node)
+
+	var no_interact_node = NoInteractStateScript.new()
+	no_interact_node.name = "NoInteract"
+	state_machine.add_child(no_interact_node)
+
+	state_machine.init_state(self)
+
+
+func setup_card(data: CardData, index: int) -> void:
 	card_index = index
+	card_data = data
 	name_label.text = data.card_title
 	value_label.text = data.description
-	card_img.texture = data.card_ui
-# 监听鼠标输入
-func _gui_input(event: InputEvent) -> void:
-	if (event is InputEventMouseButton):
-		if (event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
-			emit_signal("card_clicked", card_index)
+	if data.card_ui:
+		card_img.texture = data.card_ui
 
-func set_card_style(selected:bool):
-	is_selected = selected
-	if is_selected:
-		z_index = 1
-		#card_color_bg.color = Color("fd1d44ff")
-		#if tween: 
-			#tween.kill()
-		#tween = create_tween()
-		#tween.tween_property(self, "scale", scale_factor, 0.2)\
-			#.set_trans(Tween.TRANS_BACK)\
-			#.set_ease(Tween.EASE_OUT)
+
+func _gui_input(event: InputEvent) -> void:
+	if state_machine and state_machine.current_state:
+		(state_machine.current_state as CutoffCardState).on_gui_input(event)
+
+
+func _input(event: InputEvent) -> void:
+	if state_machine and state_machine.current_state:
+		(state_machine.current_state as CutoffCardState).on_input(event)
+
+
+func _on_mouse_entered() -> void:
+	if state_machine and state_machine.current_state:
+		(state_machine.current_state as CutoffCardState).on_mouse_entered()
+
+
+func _on_mouse_exited() -> void:
+	if state_machine and state_machine.current_state:
+		(state_machine.current_state as CutoffCardState).on_mouse_exited()
+
+
+func _on_state_transitioned(old_state: int, new_state: int) -> void:
+	if new_state == CutoffCardState.DRAGGING:
+		card_drag_started.emit(self)
+	elif old_state == CutoffCardState.DRAGGING:
+		card_drag_ended.emit(self)
+		if new_state == CutoffCardState.DESTROY:
+			card_play_requested.emit(self)
+
+
+func check_destroy_area_overlap() -> bool:
+	var areas = get_tree().get_nodes_in_group("destroy_area")
+	if areas.is_empty():
+		return false
+
+	var card_center = global_position + pivot_offset
+	for area in areas:
+		var area_rect = Rect2(area.global_position, area.size)
+		if area_rect.has_point(card_center):
+			return true
+	return false
+
+
+func get_current_state_id() -> int:
+	if not state_machine or not state_machine.current_state:
+		return -1
+	var current = state_machine.current_state as CutoffCardState
+	if not current:
+		return -1
+	return current.state
+
+
+func is_destroying() -> bool:
+	return get_current_state_id() == CutoffCardState.DESTROY
+
+
+func reset_destroy_area_highlight() -> void:
+	for area in get_tree().get_nodes_in_group("destroy_area"):
+		area.modulate = Color.WHITE
+
+
+func tween_scale_to(target_scale: Vector2, duration: float, trans: Tween.TransitionType, ease: Tween.EaseType = Tween.EASE_OUT) -> void:
+	if scale_tween and scale_tween.is_valid():
+		scale_tween.kill()
+	scale_tween = create_tween().set_trans(trans).set_ease(ease)
+	scale_tween.tween_property(self, "scale", target_scale, duration)
+
+
+func set_interactable(enabled: bool) -> void:
+	interactable = enabled
+	if not state_machine:
+		mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+		return
+
+	var current = state_machine.current_state as CutoffCardState
+	if not current:
+		mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+		return
+
+	if current.state == CutoffCardState.DESTROY:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
 	else:
-		z_index = 0
-		#card_color_bg.color = Color("17a5feff")
-		#if tween: 
-			#tween.kill()
-		#tween = create_tween()
-		#tween.tween_property(self, "scale", Vector2(1, 1), 0.3)\
-			#.set_trans(Tween.TRANS_SINE)\
-			#.set_ease(Tween.EASE_OUT)
-	update_card_visuals()
-	
-func _on_mouse_entered():
-	# 单独使用这种写法存在隐患：如果鼠标进出极快，导致旧动画未播放完，新动画抢夺控制
-	# 会导致卡牌抖动或者停止半空中
-	#create_tween().tween_property(self, "position:y", -hover_offset, 0.1)
-	
-	# 优化方法
-	# 如果存在旧动画播放，直接终止
-	#if tween: 
-		#tween.kill()
-	#tween = create_tween()
-	# 将卡牌移到上层
-	#z_index = 1
-	# 动画1向上位移
-	# tween函数末尾增加\使用链式调用：设置过渡为 BACK (回弹)，缓动为 OUT (末端减速)
-	#tween.tween_property(self, "position:y", -hover_offset, 0.2)\
-		#.set_trans(Tween.TRANS_BACK)\
-		#.set_ease(Tween.EASE_OUT)
-	#tween.tween_property(self, "scale", scale_factor, 0.2)\
-		#.set_trans(Tween.TRANS_BACK)\
-		#.set_ease(Tween.EASE_OUT)
-	z_index = 1
-	is_hovering = true
-	emit_signal("card_hovering", card_index, is_hovering)
-	update_card_visuals()
-	
-func _on_mouse_exited():
-	#create_tween().tween_property(self, "position:y", 0, 0.1)
-	#if tween: 
-		#tween.kill()
-	#tween = create_tween()
-	#z_index = 0
-	# 离开时用 SINE，让它平稳落回，不要太晃
-	#tween.tween_property(self, "position:y", 0, 0.3)\
-		#.set_trans(Tween.TRANS_SINE)\
-		#.set_ease(Tween.EASE_OUT)
-	#tween.tween_property(self, "scale", Vector2(1, 1), 0.3)\
-		#.set_trans(Tween.TRANS_SINE)\
-		#.set_ease(Tween.EASE_OUT)
-	z_index = 0
-	is_hovering = false
-	emit_signal("card_hovering", card_index, is_hovering)
-	update_card_visuals()
-	
-func update_card_visuals():
-	if tween: 
-		tween.kill()
-	tween = create_tween().set_parallel(true)
-	# 逻辑1,只要悬停或者选中，卡牌保持升起
-	#var target_y = -hover_offset
-	#if is_hovering or is_selected:
-		#target_y = -hover_offset
-	#else:
-		#target_y = 0
-	# 采用三元逻辑写法，简化上面的if else
-	var target_y = -hover_offset if is_selected else 0
-	tween.tween_property(self, "position:y", target_y, 0.2).set_trans(Tween.TRANS_SINE)
-	# 逻辑2，只有选中卡牌才放大
-	var target_scale = scale_factor if (is_hovering or is_selected) else Vector2(1,1)
-	tween.tween_property(self, "scale", target_scale, 0.2).set_trans(Tween.TRANS_SINE)
+		mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+
+	if interactable:
+		if current.state == CutoffCardState.NO_INTERACT:
+			state_machine.transition_to(CutoffCardState.IDLE)
+	else:
+		if current.state != CutoffCardState.DESTROY and current.state != CutoffCardState.NO_INTERACT:
+			state_machine.transition_to(CutoffCardState.NO_INTERACT)
+
+
+func cancel_play() -> void:
+	if not state_machine or not state_machine.current_state:
+		return
+
+	# 重置视觉效果
+	var mat = card_img.material as ShaderMaterial
+	if mat and mat.get("shader_parameter/dissolve_value") < 1.0:
+		var t = create_tween()
+		t.tween_property(mat, "shader_parameter/dissolve_value", 1.0, 0.1)
+
+	if scale_tween and scale_tween.is_valid():
+		scale_tween.kill()
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	name_label.modulate.a = 1.0
+	value_label.modulate.a = 1.0
+	reset_destroy_area_highlight()
+	mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+
+	if interactable:
+		var current = state_machine.current_state as CutoffCardState
+		if current and current.state != CutoffCardState.IDLE:
+			state_machine.transition_to(CutoffCardState.IDLE)

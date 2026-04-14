@@ -4,6 +4,18 @@
 [ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="1_sugp2"]
 [ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_jyhfs"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_destroy"]
+bg_color = Color(0.75, 0.12, 0.1, 0.5)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.3, 0.2, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o5qli"]
 bg_color = Color(0.21518216, 0.21518219, 0.21518207, 1)
 
@@ -35,6 +47,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PriceLabel" type="Label" parent="UI" unique_id=1493065944]
+texture_filter = 2
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -74,30 +87,43 @@ text = "现金：100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PlayCardButton" type="Button" parent="UI" unique_id=1265336827]
-layout_mode = 0
-offset_left = 1154.0
-offset_top = 618.0
-offset_right = 1274.0
-offset_bottom = 688.0
-theme_override_fonts/font = ExtResource("2_jyhfs")
-text = "打出"
-
 [node name="SkipButton" type="Button" parent="UI" unique_id=486816806]
 layout_mode = 0
-offset_left = 1155.0
-offset_top = 533.0
-offset_right = 1275.0
-offset_bottom = 603.0
+offset_left = 1043.0
+offset_top = 636.0
+offset_right = 1243.0
+offset_bottom = 699.0
 theme_override_fonts/font = ExtResource("2_jyhfs")
-text = "跳过回合"
+text = "结束回合"
 
-[node name="HandArea" type="Container" parent="UI" unique_id=1482669060]
+[node name="HandArea" type="Control" parent="UI" unique_id=1482669060]
 layout_mode = 1
-offset_left = 37.0
-offset_top = 432.0
-offset_right = 1117.0
-offset_bottom = 714.0
+anchors_preset = 0
+offset_left = 56.0
+offset_top = 430.0
+offset_right = 973.0
+offset_bottom = 712.0
+
+[node name="DestroyArea" type="Panel" parent="UI" unique_id=421926449 groups=["destroy_area"]]
+layout_mode = 0
+offset_left = 1037.0
+offset_top = 428.0
+offset_right = 1249.0
+offset_bottom = 624.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_destroy")
+
+[node name="Label" type="Label" parent="UI/DestroyArea" unique_id=2015852735]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.85, 0.9)
+theme_override_font_sizes/font_size = 20
+text = "出牌区"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="RandomCutValue" type="Label" parent="UI" unique_id=1395943249]
 layout_mode = 0
@@ -151,7 +177,7 @@ offset_top = 5.0
 offset_right = 309.0
 offset_bottom = 67.0
 theme_override_fonts/font = ExtResource("2_jyhfs")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_tbgi4")
 text = "目标金额：40"
 horizontal_alignment = 1
@@ -183,7 +209,6 @@ vertical_alignment = 1
 [node name="GameManager" type="Node" parent="." unique_id=407209934]
 script = ExtResource("1_o5qli")
 
-[connection signal="pressed" from="UI/PlayCardButton" to="GameManager" method="_on_play_card_button_pressed"]
 [connection signal="pressed" from="UI/SkipButton" to="GameManager" method="_on_skip_button_pressed"]
 [connection signal="pressed" from="UI/NextRoundButton" to="GameManager" method="_on_next_round_pressed"]
 [connection signal="pressed" from="UI/PayPanel/PayConfirm" to="GameManager" method="_on_pay_confirm_pressed"]
