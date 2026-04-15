@@ -1,5 +1,6 @@
 extends Node
 
+# 常量：旧版硬编码卡池数据（已弃用，仅保留兼容）。
 const BASIC_CARDS = [
 	{"name": "我要砍价", "description": "随机减少商品价格5分~5元", "min_cut_value": 0.05, "max_cut_value": 5.00},
 	{"name": "好友助力", "description": "随机减少商品价格5元~20元", "min_cut_value": 5.00, "max_cut_value": 20.00},
