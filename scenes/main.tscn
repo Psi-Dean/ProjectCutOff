@@ -5,7 +5,7 @@
 [ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_jyhfs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_destroy"]
-bg_color = Color(0.75, 0.12, 0.1, 0.5)
+bg_color = Color(0, 0.47137916, 0.46331686, 0.5019608)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -74,10 +74,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 1115.0
-offset_top = 12.0
-offset_right = 1265.0
-offset_bottom = 62.0
+offset_left = 1062.0
+offset_top = 23.0
+offset_right = 1212.0
+offset_bottom = 73.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.41785318, 0.814361, 0.76842237, 1)
