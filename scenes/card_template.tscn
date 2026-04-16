@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bd2nraidoxxf6"]
 
-[ext_resource type="Script" uid="uid://cq5l38n5j8gp7" path="res://scripts/card_template.gd" id="1_y1fi3"]
-[ext_resource type="Texture2D" uid="uid://b0nu62s4bbsbl" path="res://assets/card/voucher1.png" id="2_u5ol4"]
+[ext_resource type="Script" uid="uid://f573iqcxfcns" path="res://scripts/card_template.gd" id="1_y1fi3"]
+[ext_resource type="Texture2D" uid="uid://mlfuinjqb3gv" path="res://assets/card/voucher1.png" id="2_u5ol4"]
 [ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="3_jwumr"]
 [ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="4_clgy5"]
 
