@@ -41,6 +41,12 @@ var basic_cards_deck: Array[CardData] = []
 var setup_cards_limit: int = 6
 # 变量：每回合补牌数量。
 var round_cards_limit: int = 3
+# 玩家选择牌库限制数量
+var player_setup_limit: int = 16
+# 玩家手牌上限
+var hand_limit:int = 15
+# 玩家牌库数据
+var player_deck: Array[CardData] = []
 # 变量：玩家当前手牌数据。
 var player_cards: Array[CardData] = []
 # 变量：最终砍价值（用于滚动展示后定格）。
@@ -78,7 +84,8 @@ const HAND_LAYOUT_TIME: float = 0.35
 # 功能：初始化卡池、手牌显示和各类 UI 状态。
 func _ready() -> void:
 	load_card_resources()
-	setup_cards()
+	setup_card_deck()
+	random_draw_cards()
 	random_cut_value.visible = false
 	check_player_money()
 	check_end_turn()
@@ -401,7 +408,7 @@ func _on_next_round_pressed() -> void:
 	if play_state == GameState.PlayState.ROUND_END:
 		move_count = 0
 		play_state = GameState.PlayState.PLAYER_TURN
-		next_round_cards()
+		random_draw_cards()
 		check_player_money()
 		update_cards_display()
 		update_play_state()
@@ -419,22 +426,38 @@ func _on_pay_confirm_pressed() -> void:
 	update_play_state()
 	update_play_times()
 	update_price_display()
-
-# 功能：开局按数量从基础卡池抽取手牌。
-func setup_cards() -> void:
+		
+# 随机抽牌函数，按照是开局还是下回合获取不同数量
+func random_draw_cards():
+	if player_deck.is_empty():
+		return
+	var cards_limit = setup_cards_limit  if play_state == GameState.PlayState.GAME_START else round_cards_limit
+	var card_space = hand_limit - player_cards.size()
+	var real_limit = cards_limit if cards_limit < card_space else card_space
+	print("剩余可抽卡牌",real_limit)
+	for i in range(real_limit):
+		if not player_deck.is_empty():
+			var randomidx = randi_range(0, player_deck.size() - 1)
+			player_cards.append(player_deck[randomidx].duplicate(true))
+			player_deck.remove_at(randomidx)
+		else:
+			print("牌库空了！")
+			return
+			
+# 根据基础卡牌池basic_cards_deck，初始化本局玩家牌库
+# basic_cards_deck基础卡牌池不会在对局中消耗
+# player_deck作为玩家本局牌库，在对局中抽牌时会被消耗
+# 当前版本允许玩家从基础卡牌池重复抽卡
+# TODO 后续改为从卡牌构筑/选牌界面加入player_deck
+func setup_card_deck():
 	if basic_cards_deck.is_empty():
 		return
-	for _i in range(setup_cards_limit):
-		var random_idx = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_idx].duplicate(true))
+	player_deck = []
+	for i in range(player_setup_limit):
+		var randomidx = randi_range(0, basic_cards_deck.size() -1)
+		player_deck.append(basic_cards_deck[randomidx].duplicate(true))
+	play_state =  GameState.PlayState.GAME_START
 
-# 功能：回合开始时按数量补充手牌。
-func next_round_cards() -> void:
-	if basic_cards_deck.is_empty():
-		return
-	for _i in range(round_cards_limit):
-		var random_idx = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_idx].duplicate(true))
 
 # 功能：从资源目录加载所有卡牌资源到基础卡池。
 func load_card_resources() -> void:
