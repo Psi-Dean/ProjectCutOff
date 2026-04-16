@@ -41,6 +41,10 @@ var basic_cards_deck: Array[CardData] = []
 var setup_cards_limit: int = 6
 # 变量：每回合补牌数量。
 var round_cards_limit: int = 3
+# 玩家选择牌库限制数量
+var player_setup_limit: int = 6
+# 玩家牌库数据
+var player_deck: Array[CardData] = []
 # 变量：玩家当前手牌数据。
 var player_cards: Array[CardData] = []
 # 变量：最终砍价值（用于滚动展示后定格）。
@@ -97,18 +101,18 @@ func _on_card_play_requested(card: Control) -> void:
 	if is_playing_card:
 		card.cancel_play()
 		return
-	if not _can_cards_interact():
+	if not _can_cardsinteract():
 		card.cancel_play()
 		return
 
 	is_playing_card = true
-	_apply_cards_interactable()
+	_apply_cardsinteractable()
 
-	var index = _find_card_index(card)
+	var index = _find_cardindex(card)
 	if index < 0:
 		is_playing_card = false
 		card.cancel_play()
-		_apply_cards_interactable()
+		_apply_cardsinteractable()
 		return
 
 	current_select_card = card.card_data
@@ -122,7 +126,7 @@ func _on_card_play_requested(card: Control) -> void:
 
 	# 说明：给 queue_free 一帧时间，确保节点树状态稳定后再重排。
 	await get_tree().create_timer(0.1).timeout
-	_refresh_card_indices()
+	_refresh_cardindices()
 	rearrange_cards()
 
 	check_game_result()
@@ -134,14 +138,14 @@ func _on_card_play_requested(card: Control) -> void:
 	_show_roll_animation()
 
 	is_playing_card = false
-	_apply_cards_interactable()
+	_apply_cardsinteractable()
 
 # 功能：响应卡牌进入拖拽，锁定仅拖拽卡可交互并触发手牌重排。
 func _on_card_drag_started(card: Control) -> void:
-	if not _can_cards_interact():
+	if not _can_cardsinteract():
 		return
 	dragging_card = card
-	_apply_cards_interactable()
+	_apply_cardsinteractable()
 	rearrange_cards()
 
 # 功能：响应卡牌结束拖拽，按落点重排并重建手牌数据。
@@ -150,28 +154,28 @@ func _on_card_drag_ended(card: Control) -> void:
 		dragging_card = null
 
 	# 说明：拖到销毁区时保持原地销毁，不参与回插排序。
-	if _is_destroying_card(card):
+	if is_destroying_card(card):
 		rearrange_cards()
-		_refresh_card_indices()
-		_apply_cards_interactable()
+		_refresh_cardindices()
+		_apply_cardsinteractable()
 		return
 
 	# 说明：按落点 X 计算插入位置，并同步手牌数组顺序。
-	_insert_card_by_drop_position(card)
+	insert_card_by_drop_position(card)
 	_rebuild_player_cards_from_nodes()
 	rearrange_cards()
-	_apply_cards_interactable()
+	_apply_cardsinteractable()
 
 # 功能：播放本次砍价随机滚动文本动画并最终定格。
 func _show_roll_animation() -> void:
 	random_cut_value.text = "本次砍价：¥%.2f" % 0.00
 	var t = create_tween()
-	for _i in range(roll_times):
+	for i in range(roll_times):
 		t.tween_callback(func():
 			if current_select_card:
 				random_cut_value.text = "本次砍价：¥%.2f" % randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
 		)
-		t.tween_interval(0.05)
+		t.tweeninterval(0.05)
 	t.tween_callback(func(): random_cut_value.text = "本次砍价：¥%.2f" % final_cut_value)
 
 # 功能：同步手牌节点与数据，并连接卡牌事件信号。
@@ -191,13 +195,13 @@ func update_cards_display() -> void:
 			if not card.card_drag_ended.is_connected(_on_card_drag_ended):
 				card.card_drag_ended.connect(_on_card_drag_ended)
 	else:
-		_refresh_card_indices()
+		_refresh_cardindices()
 
 	rearrange_cards()
-	_apply_cards_interactable()
+	_apply_cardsinteractable()
 
 # 功能：判断指定卡牌是否处于销毁状态。
-func _is_destroying_card(card: Control) -> bool:
+func is_destroying_card(card: Control) -> bool:
 	return card != null and card.has_method("is_destroying") and card.is_destroying()
 
 # 功能：获取当前所有有效手牌节点（排除待删除与销毁中节点）。
@@ -205,7 +209,7 @@ func _get_card_nodes() -> Array:
 	var result: Array = []
 	for child in hand_area.get_children():
 		if not child.is_queued_for_deletion() and child.has_method("setup_card"):
-			if not _is_destroying_card(child):
+			if not is_destroying_card(child):
 				result.append(child)
 	return result
 
@@ -217,29 +221,29 @@ func _get_active_cards() -> Array:
 			result.append(child)
 	return result
 
-# 功能：刷新所有手牌节点的 card_index。
-func _refresh_card_indices() -> void:
+# 功能：刷新所有手牌节点的 cardindex。
+func _refresh_cardindices() -> void:
 	var cards = _get_card_nodes()
 	for i in range(cards.size()):
-		cards[i].card_index = i
+		cards[i].cardindex = i
 
 # 功能：根据当前节点顺序重建玩家手牌数据数组。
 func _rebuild_player_cards_from_nodes() -> void:
 	player_cards.clear()
 	var cards = _get_card_nodes()
 	for i in range(cards.size()):
-		cards[i].card_index = i
+		cards[i].cardindex = i
 		player_cards.append(cards[i].card_data)
 
 # 功能：查找卡牌在玩家手牌数据中的索引。
-func _find_card_index(card: Control) -> int:
-	var index = card.card_index
+func _find_cardindex(card: Control) -> int:
+	var index = card.cardindex
 	if index >= 0 and index < player_cards.size() and player_cards[index] == card.card_data:
 		return index
 	return player_cards.find(card.card_data)
 
 # 功能：根据拖拽放下时的横向位置计算卡牌插入下标。
-func _insert_card_by_drop_position(card: Control) -> void:
+func insert_card_by_drop_position(card: Control) -> void:
 	if not card:
 		return
 	var cards = _get_card_nodes()
@@ -253,38 +257,38 @@ func _insert_card_by_drop_position(card: Control) -> void:
 	others.sort_custom(func(a, b): return (a.global_position.x + a.size.x * 0.5) < (b.global_position.x + b.size.x * 0.5))
 
 	var drop_x = card.global_position.x + card.size.x * 0.5
-	var insert_index = 0
+	var insertindex = 0
 	for other in others:
 		var center_x = other.global_position.x + other.size.x * 0.5
 		if drop_x > center_x:
-			insert_index += 1
+			insertindex += 1
 
-	_move_card_node_to_insert_index(card, insert_index)
+	_move_card_node_toinsertindex(card, insertindex)
 
 # 功能：按插入下标调整卡牌节点在手牌容器中的顺序。
-func _move_card_node_to_insert_index(card: Control, insert_index: int) -> void:
+func _move_card_node_toinsertindex(card: Control, insertindex: int) -> void:
 	var orderable: Array = []
 	for child in hand_area.get_children():
-		if not child.is_queued_for_deletion() and child.has_method("setup_card") and not _is_destroying_card(child):
+		if not child.is_queued_for_deletion() and child.has_method("setup_card") and not is_destroying_card(child):
 			if child != card:
 				orderable.append(child)
 
-	insert_index = clampi(insert_index, 0, orderable.size())
-	if insert_index < orderable.size():
-		var anchor = orderable[insert_index]
-		hand_area.move_child(card, anchor.get_index())
+	insertindex = clampi(insertindex, 0, orderable.size())
+	if insertindex < orderable.size():
+		var anchor = orderable[insertindex]
+		hand_area.move_child(card, anchor.getindex())
 		return
 
-	var last_index = -1
+	var lastindex = -1
 	for child in hand_area.get_children():
-		if not child.is_queued_for_deletion() and child.has_method("setup_card") and not _is_destroying_card(child):
+		if not child.is_queued_for_deletion() and child.has_method("setup_card") and not is_destroying_card(child):
 			if child != card:
-				last_index = child.get_index()
+				lastindex = child.getindex()
 
-	if last_index < 0:
+	if lastindex < 0:
 		hand_area.move_child(card, 0)
 	else:
-		hand_area.move_child(card, last_index + 1)
+		hand_area.move_child(card, lastindex + 1)
 
 # 功能：按可调参数执行手牌扇形布局与平滑动画。
 func rearrange_cards() -> void:
@@ -368,7 +372,7 @@ func update_play_state() -> void:
 	pay_panel.visible = not is_paid and play_state != GameState.PlayState.GAME_OVER
 	game_over_label.visible = play_state == GameState.PlayState.GAME_OVER
 	update_pay_confirm_text()
-	_apply_cards_interactable()
+	_apply_cardsinteractable()
 
 # 功能：刷新购买按钮文案。
 func update_pay_confirm_text() -> void:
@@ -378,17 +382,17 @@ func update_pay_confirm_text() -> void:
 		pay_confirm.text = "价格未达成"
 
 # 功能：统一判断当前阶段是否允许手牌交互。
-func _can_cards_interact() -> bool:
+func _can_cardsinteract() -> bool:
 	return play_state == GameState.PlayState.PLAYER_TURN and not is_playing_card and not is_paid
 
 # 功能：统一应用手牌可交互状态（拖拽时仅允许当前拖拽卡交互）。
-func _apply_cards_interactable() -> void:
-	var can_interact = _can_cards_interact()
-	if not can_interact:
+func _apply_cardsinteractable() -> void:
+	var caninteract = _can_cardsinteract()
+	if not caninteract:
 		dragging_card = null
 	for card in _get_card_nodes():
-		var enabled = can_interact and (dragging_card == null or card == dragging_card)
-		card.set_interactable(enabled)
+		var enabled = caninteract and (dragging_card == null or card == dragging_card)
+		card.setinteractable(enabled)
 
 # 功能：响应“跳过”按钮，结束当前回合。
 func _on_skip_button_pressed() -> void:
@@ -421,21 +425,34 @@ func _on_pay_confirm_pressed() -> void:
 	update_price_display()
 
 # 功能：开局按数量从基础卡池抽取手牌。
+# TODO 开局抽牌函数和回合补牌函数整合，创建从牌库抽牌函数
 func setup_cards() -> void:
 	if basic_cards_deck.is_empty():
 		return
-	for _i in range(setup_cards_limit):
-		var random_idx = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_idx].duplicate(true))
+	for i in range(setup_cards_limit):
+		var randomidx = randi_range(0, basic_cards_deck.size() - 1)
+		player_cards.append(basic_cards_deck[randomidx].duplicate(true))
 
 # 功能：回合开始时按数量补充手牌。
 func next_round_cards() -> void:
 	if basic_cards_deck.is_empty():
 		return
-	for _i in range(round_cards_limit):
-		var random_idx = randi_range(0, basic_cards_deck.size() - 1)
-		player_cards.append(basic_cards_deck[random_idx].duplicate(true))
+	for i in range(round_cards_limit):
+		var randomidx = randi_range(0, basic_cards_deck.size() - 1)
+		player_cards.append(basic_cards_deck[randomidx].duplicate(true))
+func random_draw_cards():
+	if player_deck.is_empty():
+		return
+	for i in range(if GameState.PlayState.ROUND_END: round_cards_limit else: setup_cards_limit):
+		var randomidx = randi_range(0, player_deck.size() - 1)
+		player_cards.append(player_deck[randomidx].duplicate(true))
 
+func setup_card_deck():
+	if basic_cards_deck.is_empty():
+		return
+	for i in range(player_setup_limit):
+		var randomidx = randi_range(0, basic_cards_deck.size() -1)
+		player_deck.append(basic_cards_deck[randomidx].duplicate(true))
 # 功能：从资源目录加载所有卡牌资源到基础卡池。
 func load_card_resources() -> void:
 	var cards_path = "res://resources/cards/"
