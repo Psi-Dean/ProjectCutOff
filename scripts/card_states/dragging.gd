@@ -20,8 +20,8 @@ func _init() -> void:
 func enter() -> void:
 	if not card:
 		return
-	card.z_index = 10
-	card.move_to_front()
+	if card.has_method("refresh_visual_z_index"):
+		card.refresh_visual_z_index()
 	drop_armed = false
 	pending_drop_click = false
 	drag_start_mouse_pos = card.get_global_mouse_position()

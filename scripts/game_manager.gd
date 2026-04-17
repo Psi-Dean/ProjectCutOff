@@ -40,7 +40,7 @@ var basic_cards_deck: Array[CardData] = []
 # 变量：开局发牌数量。
 var setup_cards_limit: int = 6
 # 变量：每回合补牌数量。
-var round_cards_limit: int = 3
+var round_cards_limit: int = 1
 # 玩家选择牌库限制数量
 var player_setup_limit: int = 16
 # 玩家手牌上限
@@ -230,6 +230,16 @@ func _refresh_card_indices() -> void:
 	for i in range(cards.size()):
 		cards[i].card_index = i
 
+# 功能：按当前手牌顺序同步每张卡牌的基础层级，避免悬停后层级错乱。
+func _sync_cards_base_z_index() -> void:
+	var cards = _get_card_nodes()
+	for i in range(cards.size()):
+		var card = cards[i]
+		if card.has_method("set_base_z_index"):
+			card.set_base_z_index(i)
+		else:
+			card.z_index = i
+
 # 功能：根据当前节点顺序重建玩家手牌数据数组。
 func _rebuild_player_cards_from_nodes() -> void:
 	player_cards.clear()
@@ -295,6 +305,8 @@ func _move_card_node_to_insert_index(card: Control, insert_index: int) -> void:
 
 # 功能：按可调参数执行手牌扇形布局与平滑动画。
 func rearrange_cards() -> void:
+	_sync_cards_base_z_index()
+
 	var cards = _get_active_cards()
 	var count = cards.size()
 	if count == 0:
@@ -434,7 +446,7 @@ func random_draw_cards():
 	var cards_limit = setup_cards_limit  if play_state == GameState.PlayState.GAME_START else round_cards_limit
 	var card_space = hand_limit - player_cards.size()
 	var real_limit = cards_limit if cards_limit < card_space else card_space
-	print("剩余可抽卡牌",real_limit)
+	print("手牌剩余位置",card_space)
 	for i in range(real_limit):
 		if not player_deck.is_empty():
 			var randomidx = randi_range(0, player_deck.size() - 1)

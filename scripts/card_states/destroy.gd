@@ -9,7 +9,8 @@ func enter() -> void:
 	if not card:
 		return
 
-	card.z_index = 10
+	if card.has_method("refresh_visual_z_index"):
+		card.refresh_visual_z_index()
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.reset_destroy_area_highlight()
 

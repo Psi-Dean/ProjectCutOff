@@ -11,7 +11,8 @@ func _init() -> void:
 func enter() -> void:
 	if not card:
 		return
-	card.z_index = 0
+	if card.has_method("refresh_visual_z_index"):
+		card.refresh_visual_z_index()
 	card.tween_scale_to(Vector2.ONE, IDLE_BACK_TIME, Tween.TRANS_ELASTIC, Tween.EASE_OUT)
 
 	var prev_state_id := -1

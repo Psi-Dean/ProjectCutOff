@@ -2,11 +2,11 @@ extends CutoffCardState
 
 # ===== 悬停手感可调参数 =====
 # HOVER_JELLY_TIME：悬停进入/退出时果冻动画时长。
-const HOVER_JELLY_TIME: float = 0.45
+const HOVER_JELLY_TIME: float = 0.65
 # HOVER_SCALE：悬停时卡牌放大倍率。
 const HOVER_SCALE: Vector2 = Vector2(1.28, 1.28)
 # HOVER_BOTTOM_OVERFLOW：悬停时允许卡牌底边超出屏幕下边缘的像素。
-const HOVER_BOTTOM_OVERFLOW: float = 20.0
+const HOVER_BOTTOM_OVERFLOW: float = 35.0
 # HOVER_TOP_MARGIN：悬停时卡牌顶部最小安全边距，避免超出屏幕顶端。
 const HOVER_TOP_MARGIN: float = 10.0
 
@@ -18,8 +18,8 @@ func _init() -> void:
 func enter() -> void:
 	if not card:
 		return
-	card.z_index = 20
-	card.move_to_front()
+	if card.has_method("refresh_visual_z_index"):
+		card.refresh_visual_z_index()
 
 	var anchor_y = card.position.y
 	if card.has_method("get_layout_anchor_y"):
@@ -34,10 +34,9 @@ func enter() -> void:
 	card.tween_position_y_to(target_y, HOVER_JELLY_TIME, Tween.TRANS_ELASTIC, Tween.EASE_OUT)
 	card.tween_rotation_to(0.0, HOVER_JELLY_TIME * 0.8, Tween.TRANS_ELASTIC, Tween.EASE_OUT)
 
-# 功能：退出悬停状态时恢复默认层级。
+# 功能：退出悬停状态（层级恢复交由下一状态 enter 统一处理）。
 func exit() -> void:
-	if card:
-		card.z_index = 0
+	pass
 
 # 功能：逐帧校验真实悬停目标，兜底清理高速划过导致的悬停残留。
 func update(_delta: float) -> void:

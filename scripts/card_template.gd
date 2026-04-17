@@ -30,6 +30,12 @@ const DraggingStateScript = preload("res://scripts/card_states/dragging.gd")
 const DestroyStateScript = preload("res://scripts/card_states/destroy.gd")
 # 常量：禁用交互状态脚本。
 const NoInteractStateScript = preload("res://scripts/card_states/no_interact.gd")
+# 常量：悬停状态层级抬升值。
+const Z_BOOST_HOVER: int = 1000
+# 常量：拖拽状态层级抬升值。
+const Z_BOOST_DRAGGING: int = 2000
+# 常量：销毁状态层级抬升值。
+const Z_BOOST_DESTROY: int = 3000
 
 # 变量：当前卡牌在手牌数组中的索引。
 var card_index: int = -1
@@ -53,6 +59,8 @@ var layout_anchor_y: float = 0.0
 var layout_anchor_rotation: float = 0.0
 # 变量：布局锚点是否已完成初始化。
 var layout_anchor_ready: bool = false
+# 变量：卡牌基础层级（由手牌排序确定，悬停结束后回到该层级）。
+var base_z_index: int = 0
 
 # ===== 卡牌阴影可调参数 =====
 @export_group("卡牌阴影")
@@ -77,6 +85,7 @@ func _ready() -> void:
 	layout_anchor_y = position.y
 	layout_anchor_rotation = rotation_degrees
 	layout_anchor_ready = false
+	z_index = base_z_index
 
 	var mat = ShaderMaterial.new()
 	mat.shader = DISSOLVE_SHADER
@@ -186,6 +195,8 @@ func _setup_state_machine() -> void:
 func setup_card(data: CardData, index: int) -> void:
 	card_index = index
 	card_data = data
+	base_z_index = index
+	refresh_visual_z_index()
 	name_label.text = data.card_title
 	value_label.text = data.description
 	if data.card_ui:
@@ -299,6 +310,29 @@ func stop_position_rotation_tweens() -> void:
 	if rot_tween and rot_tween.is_valid():
 		rot_tween.kill()
 
+# 功能：设置卡牌基础层级，并立即刷新可视层级。
+func set_base_z_index(value: int) -> void:
+	base_z_index = value
+	refresh_visual_z_index()
+
+# 功能：获取卡牌基础层级。
+func get_base_z_index() -> int:
+	return base_z_index
+
+# 功能：按当前状态刷新可视层级，避免悬停后层级漂移。
+func refresh_visual_z_index() -> void:
+	var state_id = get_current_state_id()
+	if state_id == CutoffCardState.HOVERED:
+		z_index = base_z_index + Z_BOOST_HOVER
+		return
+	if state_id == CutoffCardState.DRAGGING:
+		z_index = base_z_index + Z_BOOST_DRAGGING
+		return
+	if state_id == CutoffCardState.DESTROY:
+		z_index = base_z_index + Z_BOOST_DESTROY
+		return
+	z_index = base_z_index
+
 # 功能：按屏幕底边对齐规则计算悬停目标 Y（支持轻微超出屏幕）。
 func get_hover_y_by_bottom(target_scale: Vector2, bottom_overflow: float = 4.0, top_margin: float = 8.0) -> float:
 	var viewport_height = get_viewport_rect().size.y
@@ -407,6 +441,7 @@ func cancel_play() -> void:
 			shadow_mat.set("shader_parameter/alpha", shadow_alpha_idle)
 
 	mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+	refresh_visual_z_index()
 
 	if interactable:
 		var current = state_machine.current_state as CutoffCardState

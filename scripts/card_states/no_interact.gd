@@ -8,7 +8,8 @@ func _init() -> void:
 func enter() -> void:
 	if not card:
 		return
-	card.z_index = 0
+	if card.has_method("refresh_visual_z_index"):
+		card.refresh_visual_z_index()
 	card.reset_destroy_area_highlight()
 	card.tween_scale_to(Vector2.ONE, 0.15, Tween.TRANS_SINE, Tween.EASE_OUT)
 
