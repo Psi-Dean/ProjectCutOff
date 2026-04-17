@@ -391,10 +391,7 @@ func update_play_state() -> void:
 
 # 功能：刷新购买按钮文案。
 func update_pay_confirm_text() -> void:
-	if is_payable:
-		pay_confirm.text = "购买"
-	else:
-		pay_confirm.text = "价格未达成"
+	pay_confirm.text = "购买" if is_payable else "价格未达成"
 
 # 功能：统一判断当前阶段是否允许手牌交互。
 func _can_cards_interact() -> bool:
@@ -439,29 +436,27 @@ func _on_pay_confirm_pressed() -> void:
 	update_play_times()
 	update_price_display()
 		
-# 随机抽牌函数，按照是开局还是下回合获取不同数量
-func random_draw_cards():
+# 随机抽牌函数，获取calculate_draw_limit函数返回的数值进行随机抽牌
+func random_draw_cards() -> void:
 	if player_deck.is_empty():
 		return
-	var cards_limit = setup_cards_limit  if play_state == GameState.PlayState.GAME_START else round_cards_limit
-	var card_space = hand_limit - player_cards.size()
-	var real_limit = cards_limit if cards_limit < card_space else card_space
-	print("手牌剩余位置",card_space)
-	for i in range(real_limit):
+	for i in range(calculate_draw_limit()):
 		if not player_deck.is_empty():
 			var randomidx = randi_range(0, player_deck.size() - 1)
 			player_cards.append(player_deck[randomidx].duplicate(true))
 			player_deck.remove_at(randomidx)
 		else:
-			print("牌库空了！")
 			return
-			
+	print("玩家手牌数量:", player_cards.size())
+	print("牌库剩余手牌:", player_deck.size())
+	print("手牌剩余位置:", hand_limit - player_cards.size())
+
 # 根据基础卡牌池basic_cards_deck，初始化本局玩家牌库
 # basic_cards_deck基础卡牌池不会在对局中消耗
 # player_deck作为玩家本局牌库，在对局中抽牌时会被消耗
 # 当前版本允许玩家从基础卡牌池重复抽卡
 # TODO 后续改为从卡牌构筑/选牌界面加入player_deck
-func setup_card_deck():
+func setup_card_deck() -> void:
 	if basic_cards_deck.is_empty():
 		return
 	player_deck = []
@@ -470,7 +465,15 @@ func setup_card_deck():
 		player_deck.append(basic_cards_deck[randomidx].duplicate(true))
 	play_state =  GameState.PlayState.GAME_START
 
-
+# 功能：计算卡牌抽取的数量限制
+# cards_limit计算当前是初始化抽牌数量还是下一局补牌数量
+# card_space计算当前手牌剩余可补牌的数量，通过hand_limit限制手牌上限
+# current_draw_limit判断上面两个变量值，取最小值返回抽牌数量
+func calculate_draw_limit() -> int:
+	var cards_limit = setup_cards_limit  if play_state == GameState.PlayState.GAME_START else round_cards_limit
+	var card_space = hand_limit - player_cards.size()
+	var current_draw_limit = cards_limit if cards_limit < card_space else card_space
+	return current_draw_limit if current_draw_limit > 0 else 0
 # 功能：从资源目录加载所有卡牌资源到基础卡池。
 func load_card_resources() -> void:
 	var cards_path = "res://resources/cards/"
