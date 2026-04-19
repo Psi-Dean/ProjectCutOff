@@ -1,45 +1,54 @@
 extends Node
 
-# 引用：商品价格文本。
+# 商品价格文本。
 @onready var price_label: Label = $"../UI/PriceLabel"
-# 引用：手牌区域容器。
+# 手牌区域容器。
 @onready var hand_area: Control = $"../UI/HandArea"
-# 引用：本次砍价结果文本。
+# 本次砍价结果文本。
 @onready var random_cut_value: Label = $"../UI/RandomCutValue"
-# 引用：已出牌次数文本。
+# 已出牌次数文本。
 @onready var play_times: Label = $"../UI/PlayTimes"
-# 引用：下一回合按钮。
+# 下一回合按钮。
 @onready var next_round_button: Button = $"../UI/NextRoundButton"
-# 引用：跳过按钮。
+# 跳过按钮。
 @onready var skip_button: Button = $"../UI/SkipButton"
-# 引用：玩家现金文本。
+# 玩家现金文本。
 @onready var player_money: Label = $"../UI/PlayerMoney"
-# 引用：购买面板。
+# 购买面板。
 @onready var pay_panel: Panel = $"../UI/PayPanel"
-# 引用：购买确认按钮。
+# 购买确认按钮。
 @onready var pay_confirm: Button = $"../UI/PayPanel/PayConfirm"
-# 引用：目标价格文本。
+# 目标价格文本。
 @onready var pay_text: Label = $"../UI/PayPanel/PayText"
-# 引用：游戏结束文本。
+# 游戏结束文本。
 @onready var game_over_label: Label = $"../GameOverLabel"
+# 心态值进度条
+@onready var mindset_bar: ProgressBar = $"../UI/MindSetBar"
+# 心态值文本
+@onready var mindset_value_label: Label = $"../UI/MindSetValueLabel"
+# 心态爆表提示
+@onready var mindset_warning_label: Label = $"../UI/MindSetWarningLabel"
+# 心态值光照效果
+@onready var risk_light: DirectionalLight2D = $"../UI/MindSetWarningLabel/RiskLight"
 
-# 常量：卡牌预制体场景。
+
+# 卡牌预制体场景。
 const CardScene = preload("res://scenes/card_template.tscn")
 
-# 变量：当前游戏阶段。
+# 当前游戏阶段。
 var play_state = GameState.PlayState.PLAYER_TURN
-# 变量：当前商品价格。
+# 当前商品价格。
 var current_price: float = 200.00
-# 变量：当前玩家现金。
+# 当前玩家现金。
 var current_money: float = 50.00
-# 变量：购买目标价格。
+# 购买目标价格。
 var goal_price: float = 40.00
 
-# 变量：基础卡池（从资源目录加载）。
+# 基础卡池（从资源目录加载）。
 var basic_cards_deck: Array[CardData] = []
-# 变量：开局发牌数量。
+# 开局发牌数量。
 var setup_cards_limit: int = 6
-# 变量：每回合补牌数量。
+# 每回合补牌数量。
 var round_cards_limit: int = 1
 # 玩家选择牌库限制数量
 var player_setup_limit: int = 16
@@ -55,26 +64,26 @@ var max_mindset:float = 100.00
 var risk_value:int = 0
 # 玩家牌库数据
 var player_deck: Array[CardData] = []
-# 变量：玩家当前手牌数据。
+# 玩家当前手牌数据。
 var player_cards: Array[CardData] = []
-# 变量：最终砍价值（用于滚动展示后定格）。
+# 最终砍价值（用于滚动展示后定格）。
 var final_cut_value: float = 0.00
-# 变量：当前打出的卡牌数据。
+# 当前打出的卡牌数据。
 var current_select_card: CardData = null
-# 变量：滚动展示次数。
+# 滚动展示次数。
 var roll_times: int = 15
-# 变量：每回合可出牌上限。
+# 每回合可出牌上限。
 var move_limit: int = 3
-# 变量：当前回合已出牌数。
+# 当前回合已出牌数。
 var move_count: int = 0
-# 变量：当前是否满足可购买条件。
+# 当前是否满足可购买条件。
 var is_payable: bool = false
-# 变量：当前是否已完成购买。
+# 当前是否已完成购买。
 var is_paid: bool = false
 
-# 变量：当前正在拖拽的卡牌节点。
+# 当前正在拖拽的卡牌节点。
 var dragging_card: Control = null
-# 变量：是否处于出牌结算中（防止并发触发）。
+# 是否处于出牌结算中（防止并发触发）。
 var is_playing_card: bool = false
 
 # ===== 手牌布局可调参数（中文注释，方便手工微调）=====
@@ -100,6 +109,7 @@ func _ready() -> void:
 	update_price_display()
 	update_play_times()
 	update_play_state()
+	update_mindset_ui()
 	call_deferred("_deferred_rearrange_cards")
 
 # 在场景完成一次布局后再次刷新手牌位置，确保初始扇形布局正确生效。
@@ -128,6 +138,7 @@ func _on_card_play_requested(card: Control) -> void:
 	# 判断是否超出心态上限，并增加相应的风险值
 	calc_risk_value(current_select_card)
 	current_mindset += current_select_card.mindset_cost
+	update_mindset_ui()
 	print("心态值增加：",current_select_card.mindset_cost)
 	print("当前心态值：", current_mindset)
 	final_cut_value = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
@@ -403,6 +414,17 @@ func update_play_state() -> void:
 func update_pay_confirm_text() -> void:
 	pay_confirm.text = "购买" if is_payable else "价格未达成"
 
+# 刷新心态值进度条
+func update_mindset_ui() -> void:
+	mindset_bar.max_value = max_mindset
+	mindset_bar.value = current_mindset
+	mindset_value_label.text = \
+	"心态值:%.2f/%.2f" % [
+		current_mindset,
+		max_mindset
+	]
+	mindset_warning_label.visible = false if current_mindset < mindset_bar.max_value else true
+	play_risk_warning_effect()
 # 统一判断当前阶段是否允许手牌交互。
 func _can_cards_interact() -> bool:
 	return play_state == GameState.PlayState.PLAYER_TURN and not is_playing_card and not is_paid
@@ -465,6 +487,7 @@ func _on_next_round_pressed() -> void:
 		random_draw_cards()
 		check_player_money()
 		check_risk_value()
+		update_mindset_ui()
 		update_cards_display()
 		update_play_state()
 		update_play_times()
@@ -510,7 +533,14 @@ func setup_card_deck() -> void:
 		var randomidx = randi_range(0, basic_cards_deck.size() -1)
 		player_deck.append(basic_cards_deck[randomidx].duplicate(true))
 	play_state =  GameState.PlayState.GAME_START
-
+	
+func play_risk_warning_effect() -> void:
+	if mindset_warning_label.visible:
+		print("闪烁动画播放中...")
+		mindset_warning_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		var tween = create_tween().set_loops().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+		tween.tween_property(mindset_warning_label,"modulate", Color(1.0, 1.0, 1.0, 0.0), 0.2)
+		tween.tween_property(mindset_warning_label,"modulate",Color(1.0, 1.0, 1.0, 1.0), 0.2)
 # 计算卡牌抽取的数量限制
 # cards_limit计算当前是初始化抽牌数量还是下一局补牌数量
 # card_space计算当前手牌剩余可补牌的数量，通过hand_limit限制手牌上限

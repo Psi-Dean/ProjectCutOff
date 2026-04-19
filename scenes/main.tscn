@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://cq3a8xrvy3l18" path="res://scripts/game_manager.gd" id="1_o5qli"]
 [ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="1_sugp2"]
 [ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_jyhfs"]
+[ext_resource type="FontFile" uid="uid://dhd6sqqqryc0a" path="res://assets/font/MiSans-Regular.ttf" id="3_jyhfs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_destroy"]
 bg_color = Color(0, 0.47137916, 0.46331686, 0.5019608)
@@ -34,17 +35,30 @@ bg_color = Color(0.1251336, 0.65457064, 0.8498899, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tefeu"]
 bg_color = Color(0.9587242, 0.24030617, 0.12652683, 1)
 
+[sub_resource type="Theme" id="Theme_tbgi4"]
+default_font = ExtResource("2_jyhfs")
+
+[sub_resource type="LabelSettings" id="LabelSettings_tefeu"]
+font = ExtResource("3_jyhfs")
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_o6xl0"]
+font_color = Color(0.92156863, 0.11372549, 0.16470589, 1)
+shadow_size = 2
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(2, 2)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o6xl0"]
 
 [node name="Main" type="Node2D" unique_id=1718215227]
 
 [node name="UI" type="Control" parent="." unique_id=918623074]
 layout_mode = 3
-anchors_preset = 15
+anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+metadata/_edit_use_anchors_ = true
 
 [node name="PriceLabel" type="Label" parent="UI" unique_id=1493065944]
 texture_filter = 2
@@ -193,6 +207,40 @@ offset_bottom = 114.0
 theme_override_fonts/font = ExtResource("2_jyhfs")
 theme_override_styles/normal = SubResource("StyleBoxFlat_tefeu")
 text = "是"
+
+[node name="MindSetBar" type="ProgressBar" parent="UI" unique_id=2022184475]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 12.0
+offset_right = 193.0
+offset_bottom = 39.0
+theme = SubResource("Theme_tbgi4")
+
+[node name="MindSetValueLabel" type="Label" parent="UI" unique_id=1091123443]
+layout_mode = 0
+offset_left = 43.0
+offset_top = 42.0
+offset_right = 132.0
+offset_bottom = 56.0
+text = "当前心态："
+label_settings = SubResource("LabelSettings_tefeu")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MindSetWarningLabel" type="Label" parent="UI" unique_id=44659856]
+layout_mode = 0
+offset_left = 198.0
+offset_top = 12.0
+offset_right = 259.0
+offset_bottom = 39.0
+text = "心态要爆了"
+label_settings = SubResource("LabelSettings_o6xl0")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RiskLight" type="DirectionalLight2D" parent="UI/MindSetWarningLabel" unique_id=1088408552]
+energy = 0.0
+shadow_color = Color(0, 0, 0, 1)
 
 [node name="GameOverLabel" type="Label" parent="." unique_id=1159921741]
 visible = false
