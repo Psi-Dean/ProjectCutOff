@@ -33,7 +33,7 @@ extends Node
 
 
 # 卡牌预制体场景。
-const CardScene = preload("res://scenes/card_template.tscn")
+const CARD_SCENE = preload("res://scenes/card_template.tscn")
 
 # 当前游戏阶段。
 var play_state = GameState.PlayState.PLAYER_TURN
@@ -60,8 +60,12 @@ var current_mindset:float = 10.00
 var recovery_mindset:float = 3.00
 # 玩家心态值上限
 var max_mindset:float = 100.00
+# 心态爆表阈值百分比
+const MINDSET_WARN_PERCENT = 0.8
 # 玩家心态爆表后的风险值
 var risk_value:int = 0
+# 心态爆表动画
+var mindset_warning_tween:Tween
 # 玩家牌库数据
 var player_deck: Array[CardData] = []
 # 玩家当前手牌数据。
@@ -209,7 +213,7 @@ func update_cards_display() -> void:
 		for child in current_nodes:
 			child.queue_free()
 		for i in range(player_cards.size()):
-			var card = CardScene.instantiate()
+			var card = CARD_SCENE.instantiate()
 			hand_area.add_child(card)
 			card.setup_card(player_cards[i], i)
 			if not card.card_play_requested.is_connected(_on_card_play_requested):
@@ -423,8 +427,14 @@ func update_mindset_ui() -> void:
 		current_mindset,
 		max_mindset
 	]
-	mindset_warning_label.visible = false if current_mindset < mindset_bar.max_value else true
-	play_risk_warning_effect()
+	var is_warning = current_mindset >= max_mindset * 0.8
+	var is_over_limit = current_mindset > max_mindset
+	mindset_warning_label.visible = is_warning
+	mindset_warning_label.text = "🤬心态崩了！！！" if is_over_limit else "🥵心态要爆了！"
+	if is_warning:
+		play_risk_warning_effect()
+	else:
+		stop_risk_warning_effect()
 # 统一判断当前阶段是否允许手牌交互。
 func _can_cards_interact() -> bool:
 	return play_state == GameState.PlayState.PLAYER_TURN and not is_playing_card and not is_paid
@@ -461,6 +471,7 @@ func calc_risk_value(current_card:CardData) -> void:
 	print("当前风险累计：",risk_value)
 
 # 根据实际风险值计算后续负面逻辑
+# TODO 风险值对应逻辑的实现
 func check_risk_value() -> void:
 	if risk_value > 0:
 		# 风险值执行对应逻辑
@@ -533,14 +544,20 @@ func setup_card_deck() -> void:
 		var randomidx = randi_range(0, basic_cards_deck.size() -1)
 		player_deck.append(basic_cards_deck[randomidx].duplicate(true))
 	play_state =  GameState.PlayState.GAME_START
-	
+# 播放心态爆表提示效果
 func play_risk_warning_effect() -> void:
-	if mindset_warning_label.visible:
-		print("闪烁动画播放中...")
-		mindset_warning_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		var tween = create_tween().set_loops().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-		tween.tween_property(mindset_warning_label,"modulate", Color(1.0, 1.0, 1.0, 0.0), 0.2)
-		tween.tween_property(mindset_warning_label,"modulate",Color(1.0, 1.0, 1.0, 1.0), 0.2)
+	if mindset_warning_tween:
+		return
+	mindset_warning_label.modulate.a = 1.0
+	mindset_warning_tween = create_tween().set_loops()
+	mindset_warning_tween.tween_property(mindset_warning_label,"modulate:a", 0.0, 0.2)
+	mindset_warning_tween.tween_property(mindset_warning_label,"modulate:a",1.0, 0.2)
+# 结束心态爆表动画
+func stop_risk_warning_effect() -> void:
+	if mindset_warning_tween:
+		mindset_warning_tween.kill()
+		mindset_warning_tween = null
+	mindset_warning_label.modulate.a = 1.0
 # 计算卡牌抽取的数量限制
 # cards_limit计算当前是初始化抽牌数量还是下一局补牌数量
 # card_space计算当前手牌剩余可补牌的数量，通过hand_limit限制手牌上限
