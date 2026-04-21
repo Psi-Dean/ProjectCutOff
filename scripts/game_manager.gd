@@ -70,6 +70,8 @@ var mindset_warning_tween:Tween
 var player_deck: Array[CardData] = []
 # 玩家当前手牌数据。
 var player_cards: Array[CardData] = []
+# 弃牌堆数据
+var discard_pile:Array[CardData] = []
 # 最终砍价值（用于滚动展示后定格）。
 var final_cut_value: float = 0.00
 # 当前打出的卡牌数据。
@@ -148,6 +150,7 @@ func _on_card_play_requested(card: Control) -> void:
 	final_cut_value = randf_range(current_select_card.min_cut_value, current_select_card.max_cut_value)
 	current_price = maxf(0.0, current_price - final_cut_value)
 	player_cards.remove_at(index)
+	discard_pile.append(current_select_card)
 	move_count += 1
 	random_cut_value.visible = true
 	dragging_card = null
@@ -518,8 +521,10 @@ func _on_pay_confirm_pressed() -> void:
 		
 # 随机抽牌函数，获取calculate_draw_limit函数返回的数值进行随机抽牌
 func random_draw_cards() -> void:
-	if player_deck.is_empty():
+	if player_deck.is_empty() and discard_pile.is_empty():
 		return
+	elif player_deck.is_empty() and not discard_pile.is_empty():
+		reshuffle_discard_into_deck()
 	for i in range(calculate_draw_limit()):
 		if not player_deck.is_empty():
 			var randomidx = randi_range(0, player_deck.size() - 1)
@@ -530,7 +535,12 @@ func random_draw_cards() -> void:
 	print("玩家手牌数量:", player_cards.size())
 	print("牌库剩余手牌:", player_deck.size())
 	print("手牌剩余位置:", hand_limit - player_cards.size())
-
+	
+# 将弃牌堆卡牌放入玩家牌库
+func reshuffle_discard_into_deck() -> void:
+	for card_data in discard_pile:
+		player_deck.append(card_data)
+	discard_pile.clear()
 # 根据基础卡牌池basic_cards_deck，初始化本局玩家牌库
 # basic_cards_deck基础卡牌池不会在对局中消耗
 # player_deck作为玩家本局牌库，在对局中抽牌时会被消耗

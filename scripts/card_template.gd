@@ -265,24 +265,24 @@ func reset_destroy_area_highlight() -> void:
 		area.modulate = Color.WHITE
 
 # 功能：执行卡牌缩放补间。
-func tween_scale_to(target_scale: Vector2, duration: float, trans: Tween.TransitionType, ease: Tween.EaseType = Tween.EASE_OUT) -> void:
+func tween_scale_to(target_scale: Vector2, duration: float, tween_trans: Tween.TransitionType, tween_ease: Tween.EaseType = Tween.EASE_OUT) -> void:
 	if scale_tween and scale_tween.is_valid():
 		scale_tween.kill()
-	scale_tween = create_tween().set_trans(trans).set_ease(ease)
+	scale_tween = create_tween().set_trans(tween_trans).set_ease(tween_ease)
 	scale_tween.tween_property(self, "scale", target_scale, duration)
 
 # 功能：执行卡牌 Y 轴位移补间。
-func tween_position_y_to(target_y: float, duration: float, trans: Tween.TransitionType, ease: Tween.EaseType = Tween.EASE_OUT) -> void:
+func tween_position_y_to(target_y: float, duration: float, tween_trans: Tween.TransitionType, tween_ease: Tween.EaseType = Tween.EASE_OUT) -> void:
 	if pos_y_tween and pos_y_tween.is_valid():
 		pos_y_tween.kill()
-	pos_y_tween = create_tween().set_trans(trans).set_ease(ease)
+	pos_y_tween = create_tween().set_trans(tween_trans).set_ease(tween_ease)
 	pos_y_tween.tween_property(self, "position:y", target_y, duration)
 
 # 功能：执行卡牌旋转补间。
-func tween_rotation_to(target_rotation_degrees: float, duration: float, trans: Tween.TransitionType, ease: Tween.EaseType = Tween.EASE_OUT) -> void:
+func tween_rotation_to(target_rotation_degrees: float, duration: float, tween_trans: Tween.TransitionType, tween_ease: Tween.EaseType = Tween.EASE_OUT) -> void:
 	if rot_tween and rot_tween.is_valid():
 		rot_tween.kill()
-	rot_tween = create_tween().set_trans(trans).set_ease(ease)
+	rot_tween = create_tween().set_trans(tween_trans).set_ease(tween_ease)
 	rot_tween.tween_property(self, "rotation_degrees", target_rotation_degrees, duration)
 
 # 功能：记录布局锚点（用于待机回位与扇形恢复）。
