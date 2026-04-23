@@ -261,7 +261,12 @@ func is_destroying() -> bool:
 
 # 功能：重置所有销毁区域的高亮显示。
 func reset_destroy_area_highlight() -> void:
-	for area in get_tree().get_nodes_in_group("destroy_area"):
+	if not is_inside_tree():
+		return
+	var tree := get_tree()
+	#if not tree.has_group("destroy_area"):
+		#return
+	for area in tree.get_nodes_in_group("destroy_area"):
 		area.modulate = Color.WHITE
 
 # 功能：执行卡牌缩放补间。

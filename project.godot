@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Project CutOff"
-run/main_scene="uid://dt4jx5ufmbkof"
+run/main_scene="uid://dm03i6kfbm118"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -27,7 +27,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/nodetree_v2/plugin.cfg", "res://addons/script-ide/plugin.cfg")
 
 [physics]
 

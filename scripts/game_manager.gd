@@ -20,16 +20,12 @@ extends Node
 @onready var pay_confirm: Button = $"../UI/PayPanel/PayConfirm"
 # 目标价格文本。
 @onready var pay_text: Label = $"../UI/PayPanel/PayText"
-# 游戏结束文本。
-@onready var game_over_label: Label = $"../GameOverLabel"
 # 心态值进度条
 @onready var mindset_bar: ProgressBar = $"../UI/MindSetBar"
 # 心态值文本
 @onready var mindset_value_label: Label = $"../UI/MindSetValueLabel"
 # 心态爆表提示
 @onready var mindset_warning_label: Label = $"../UI/MindSetWarningLabel"
-# 心态值光照效果
-@onready var risk_light: DirectionalLight2D = $"../UI/MindSetWarningLabel/RiskLight"
 
 
 # 卡牌预制体场景。
@@ -38,7 +34,7 @@ const CARD_SCENE = preload("res://scenes/card_template.tscn")
 # 当前游戏阶段。
 var play_state = GameState.PlayState.PLAYER_TURN
 # 当前商品价格。
-var current_price: float = 200.00
+var current_price: float = 50.00
 # 当前玩家现金。
 var current_money: float = 50.00
 # 购买目标价格。
@@ -385,8 +381,14 @@ func update_play_times() -> void:
 
 # 检查是否满足游戏结束条件。
 func check_game_result() -> void:
-	if current_price <= 0.00 or is_paid:
+	if current_price <= 0.00:
 		play_state = GameState.PlayState.GAME_OVER
+		GameFlow.switch_to_game_over_menu("win")
+	# 暂时使用支付成功标识作为游戏失败的分支进行测试
+	# TODO 待后续完善游戏失败分支判断
+	elif is_paid:
+		play_state = GameState.PlayState.GAME_OVER
+		GameFlow.switch_to_game_over_menu("lose")
 
 # 检查当前回合是否结束。
 func check_end_turn() -> void:
@@ -413,7 +415,7 @@ func update_play_state() -> void:
 	next_round_button.visible = show_next_round
 	pay_confirm.disabled = not can_pay
 	pay_panel.visible = not is_paid and play_state != GameState.PlayState.GAME_OVER
-	game_over_label.visible = play_state == GameState.PlayState.GAME_OVER
+	#game_over_label.visible = play_state == GameState.PlayState.GAME_OVER
 	update_pay_confirm_text()
 	_apply_cards_interactable()
 

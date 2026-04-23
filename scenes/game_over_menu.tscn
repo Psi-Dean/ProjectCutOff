@@ -1,0 +1,141 @@
+[gd_scene format=3 uid="uid://sx7ssq2ubpih"]
+
+[ext_resource type="Script" uid="uid://bxftlmq40o5nv" path="res://scenes/game_over_menu.gd" id="1_ccgoi"]
+[ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="1_cwb3k"]
+[ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_ccgoi"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_0q8wh"]
+font = ExtResource("1_cwb3k")
+font_size = 40
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(6, 3)
+
+[sub_resource type="Gradient" id="Gradient_81acl"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_7u104"]
+gradient = SubResource("Gradient_81acl")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_nk4q4"]
+colors = PackedColorArray(0.15294118, 0.30588236, 0.29411766, 1, 0.42122906, 0.20253292, 0.15046692, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_mvr4g"]
+gradient = SubResource("Gradient_nk4q4")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_0q8wh"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_csn76"]
+gradient = SubResource("Gradient_0q8wh")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_ev1um"]
+colors = PackedColorArray(0.42122906, 0.20253292, 0.15046692, 1, 0.41960785, 0.20392157, 0.14901961, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_k8pbw"]
+gradient = SubResource("Gradient_ev1um")
+width = 184
+
+[sub_resource type="LabelSettings" id="LabelSettings_2nl4x"]
+font = ExtResource("2_ccgoi")
+
+[node name="GameOverMenu" type="Control" unique_id=151706403]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ccgoi")
+
+[node name="GameOverLabel" type="Label" parent="." unique_id=567100475]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.5
+offset_top = -273.0
+offset_right = 99.5
+offset_bottom = -205.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "游戏结束"
+label_settings = SubResource("LabelSettings_0q8wh")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RestartButtonBack" type="TextureRect" parent="." unique_id=1450877203]
+layout_mode = 0
+offset_left = 558.0
+offset_top = 223.0
+offset_right = 742.0
+offset_bottom = 287.0
+texture = SubResource("GradientTexture2D_7u104")
+
+[node name="RestartButton" type="TextureButton" parent="." unique_id=2063388534]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.0
+offset_top = -147.0
+offset_right = 92.0
+offset_bottom = -83.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = SubResource("GradientTexture2D_mvr4g")
+texture_pressed = SubResource("GradientTexture2D_csn76")
+texture_hover = SubResource("GradientTexture2D_k8pbw")
+
+[node name="Label" type="Label" parent="RestartButton" unique_id=1891924170]
+layout_mode = 0
+offset_right = 184.0
+offset_bottom = 72.0
+text = "重新开始"
+label_settings = SubResource("LabelSettings_2nl4x")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BackButtonBack" type="TextureRect" parent="." unique_id=893948470]
+layout_mode = 0
+offset_left = 558.0
+offset_top = 358.0
+offset_right = 742.0
+offset_bottom = 422.0
+texture = SubResource("GradientTexture2D_7u104")
+
+[node name="BackButton" type="TextureButton" parent="." unique_id=1356115190]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.0
+offset_top = -12.0
+offset_right = 92.0
+offset_bottom = 52.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = SubResource("GradientTexture2D_mvr4g")
+texture_pressed = SubResource("GradientTexture2D_csn76")
+texture_hover = SubResource("GradientTexture2D_k8pbw")
+
+[node name="Label" type="Label" parent="BackButton" unique_id=556374292]
+layout_mode = 0
+offset_right = 184.0
+offset_bottom = 72.0
+text = "返回标题"
+label_settings = SubResource("LabelSettings_2nl4x")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
