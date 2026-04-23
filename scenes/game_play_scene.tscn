@@ -1,0 +1,265 @@
+[gd_scene format=3 uid="uid://bxgb74cnipr3r"]
+
+[ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="1_hmnl0"]
+[ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_pqbmw"]
+[ext_resource type="FontFile" uid="uid://dhd6sqqqryc0a" path="res://assets/font/MiSans-Regular.ttf" id="3_a5264"]
+[ext_resource type="Script" uid="uid://cq3a8xrvy3l18" path="res://scripts/game_manager.gd" id="4_17gcu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_destroy"]
+bg_color = Color(0, 0.47137916, 0.46331686, 0.5019608)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.3, 0.2, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o5qli"]
+bg_color = Color(0.21518216, 0.21518219, 0.21518207, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sugp2"]
+bg_color = Color(0.8983909, 0.898391, 0.8983909, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0wfyh"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jyhfs"]
+bg_color = Color(0.1254902, 0.654902, 0.8509804, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbgi4"]
+bg_color = Color(0.1251336, 0.65457064, 0.8498899, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tefeu"]
+bg_color = Color(0.9587242, 0.24030617, 0.12652683, 1)
+
+[sub_resource type="Theme" id="Theme_tbgi4"]
+default_font = ExtResource("2_pqbmw")
+
+[sub_resource type="LabelSettings" id="LabelSettings_tefeu"]
+font = ExtResource("3_a5264")
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_o6xl0"]
+font_color = Color(0.92156863, 0.11372549, 0.16470589, 1)
+shadow_size = 2
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o6xl0"]
+
+[node name="GamePlayScene" type="Node2D" unique_id=1718215227]
+
+[node name="UI" type="Control" parent="." unique_id=918623074]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 0
+metadata/_edit_use_anchors_ = true
+
+[node name="PriceLabel" type="Label" parent="UI" unique_id=1493065944]
+texture_filter = 2
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 522.0
+offset_top = 250.0
+offset_right = 722.0
+offset_bottom = 350.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.81960785, 0.73333335, 0.38039216, 1)
+theme_override_fonts/font = ExtResource("1_hmnl0")
+theme_override_font_sizes/font_size = 30
+text = "价格：100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerMoney" type="Label" parent="UI" unique_id=1228296304]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 1062.0
+offset_top = 23.0
+offset_right = 1212.0
+offset_bottom = 73.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.41785318, 0.814361, 0.76842237, 1)
+theme_override_fonts/font = ExtResource("2_pqbmw")
+theme_override_font_sizes/font_size = 30
+text = "现金：100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SkipButton" type="Button" parent="UI" unique_id=486816806]
+layout_mode = 0
+offset_left = 1043.0
+offset_top = 636.0
+offset_right = 1243.0
+offset_bottom = 699.0
+theme_override_fonts/font = ExtResource("2_pqbmw")
+text = "结束回合"
+
+[node name="HandArea" type="Control" parent="UI" unique_id=1482669060]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 65.0
+offset_top = 591.0
+offset_right = 982.0
+offset_bottom = 873.0
+
+[node name="DestroyArea" type="Panel" parent="UI" unique_id=421926449 groups=["destroy_area"]]
+layout_mode = 0
+offset_left = 1037.0
+offset_top = 428.0
+offset_right = 1249.0
+offset_bottom = 624.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_destroy")
+
+[node name="Label" type="Label" parent="UI/DestroyArea" unique_id=2015852735]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.85, 0.9)
+theme_override_font_sizes/font_size = 20
+text = "出牌区"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RandomCutValue" type="Label" parent="UI" unique_id=1395943249]
+layout_mode = 0
+offset_left = 1100.0
+offset_top = 280.0
+offset_right = 1250.0
+offset_bottom = 350.0
+theme_override_colors/font_color = Color(0.9882353, 0.1882353, 0, 1)
+theme_override_fonts/font = ExtResource("2_pqbmw")
+theme_override_font_sizes/font_size = 25
+autowrap_mode = 3
+
+[node name="PlayTimes" type="Label" parent="UI" unique_id=1905810208]
+layout_mode = 0
+offset_left = 1137.0
+offset_top = 500.0
+offset_right = 1257.0
+offset_bottom = 570.0
+theme_override_fonts/font = ExtResource("2_pqbmw")
+
+[node name="NextRoundButton" type="Button" parent="UI" unique_id=1840491543]
+visible = false
+layout_mode = 0
+offset_left = 461.0
+offset_top = 197.0
+offset_right = 761.0
+offset_bottom = 397.0
+theme_override_colors/font_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
+theme_override_colors/font_pressed_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
+theme_override_colors/font_hover_color = Color(0.9112696, 0.45525503, 0.3234515, 1)
+theme_override_fonts/font = ExtResource("2_pqbmw")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_o5qli")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_sugp2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_0wfyh")
+text = "开始下一回合"
+autowrap_mode = 3
+
+[node name="PayPanel" type="Panel" parent="UI" unique_id=1765115223]
+layout_mode = 0
+offset_left = 441.0
+offset_top = 12.0
+offset_right = 755.0
+offset_bottom = 133.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_jyhfs")
+
+[node name="PayText" type="Label" parent="UI/PayPanel" unique_id=1942369347]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 5.0
+offset_right = 309.0
+offset_bottom = 67.0
+theme_override_fonts/font = ExtResource("2_pqbmw")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_tbgi4")
+text = "目标金额：40"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="PayConfirm" type="Button" parent="UI/PayPanel" unique_id=1072457346]
+layout_mode = 0
+offset_left = 65.0
+offset_top = 68.0
+offset_right = 250.0
+offset_bottom = 114.0
+theme_override_fonts/font = ExtResource("2_pqbmw")
+theme_override_styles/normal = SubResource("StyleBoxFlat_tefeu")
+text = "是"
+
+[node name="MindSetBar" type="ProgressBar" parent="UI" unique_id=2022184475]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 12.0
+offset_right = 193.0
+offset_bottom = 39.0
+theme = SubResource("Theme_tbgi4")
+
+[node name="MindSetValueLabel" type="Label" parent="UI" unique_id=1091123443]
+layout_mode = 0
+offset_left = 43.0
+offset_top = 42.0
+offset_right = 132.0
+offset_bottom = 56.0
+text = "当前心态："
+label_settings = SubResource("LabelSettings_tefeu")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MindSetWarningLabel" type="Label" parent="UI" unique_id=44659856]
+layout_mode = 0
+offset_left = 198.0
+offset_top = 12.0
+offset_right = 259.0
+offset_bottom = 39.0
+text = "心态要爆了"
+label_settings = SubResource("LabelSettings_o6xl0")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RiskLight" type="DirectionalLight2D" parent="UI/MindSetWarningLabel" unique_id=1088408552]
+energy = 0.0
+shadow_color = Color(0, 0, 0, 1)
+
+[node name="GameOverLabel" type="Label" parent="." unique_id=1159921741]
+visible = false
+offset_right = 1280.0
+offset_bottom = 719.0
+mouse_filter = 0
+theme_override_fonts/font = ExtResource("1_hmnl0")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_o6xl0")
+text = "游戏胜利"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameManager" type="Node" parent="." unique_id=407209934]
+script = ExtResource("4_17gcu")
+
+[connection signal="pressed" from="UI/SkipButton" to="GameManager" method="_on_skip_button_pressed"]
+[connection signal="pressed" from="UI/NextRoundButton" to="GameManager" method="_on_next_round_pressed"]
+[connection signal="pressed" from="UI/PayPanel/PayConfirm" to="GameManager" method="_on_pay_confirm_pressed"]

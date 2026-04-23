@@ -15,6 +15,10 @@ run/main_scene="uid://dt4jx5ufmbkof"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameFlow="*uid://bu4fm2pu4oea7"
+
 [display]
 
 window/size/viewport_width=1280
@@ -23,7 +27,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/nodetree/plugin.cfg", "res://addons/nodetree_v2/plugin.cfg", "res://addons/script-ide/plugin.cfg")
+enabled=PackedStringArray()
 
 [physics]
 

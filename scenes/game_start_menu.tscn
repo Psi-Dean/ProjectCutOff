@@ -1,0 +1,95 @@
+[gd_scene format=3 uid="uid://dm03i6kfbm118"]
+
+[ext_resource type="Script" uid="uid://b0ou8wr1p4prh" path="res://scenes/game_start_menu.gd" id="1_jra1q"]
+[ext_resource type="FontFile" uid="uid://de2txvn4yoey6" path="res://assets/font/MiSans-Bold.ttf" id="1_nk4q4"]
+[ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="2_jra1q"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_0q8wh"]
+font = ExtResource("1_nk4q4")
+font_size = 40
+
+[sub_resource type="Gradient" id="Gradient_nk4q4"]
+colors = PackedColorArray(0.15294118, 0.30588236, 0.29411766, 1, 0.42122906, 0.20253292, 0.15046692, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_nk4q4"]
+gradient = SubResource("Gradient_nk4q4")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_0q8wh"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ub78k"]
+gradient = SubResource("Gradient_0q8wh")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_ev1um"]
+colors = PackedColorArray(0.42122906, 0.20253292, 0.15046692, 1, 0.41960785, 0.20392157, 0.14901961, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8bhp0"]
+gradient = SubResource("Gradient_ev1um")
+width = 184
+
+[sub_resource type="LabelSettings" id="LabelSettings_ub78k"]
+font = ExtResource("2_jra1q")
+
+[node name="GameStartMenu" type="Control" unique_id=1516917515]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jra1q")
+
+[node name="GameTitle" type="Label" parent="." unique_id=1938405394]
+layout_mode = 0
+offset_left = 534.0
+offset_top = 78.0
+offset_right = 695.0
+offset_bottom = 154.0
+text = "拼刀刀模拟器"
+label_settings = SubResource("LabelSettings_0q8wh")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StartButton" type="TextureButton" parent="." unique_id=1022058055]
+layout_mode = 0
+offset_left = 560.0
+offset_top = 192.0
+offset_right = 744.0
+offset_bottom = 256.0
+texture_normal = SubResource("GradientTexture2D_nk4q4")
+texture_pressed = SubResource("GradientTexture2D_ub78k")
+texture_hover = SubResource("GradientTexture2D_8bhp0")
+
+[node name="Label" type="Label" parent="StartButton" unique_id=429273307]
+layout_mode = 0
+offset_right = 184.0
+offset_bottom = 72.0
+text = "开始游戏"
+label_settings = SubResource("LabelSettings_ub78k")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="QuitButton" type="TextureButton" parent="." unique_id=1599624061]
+layout_mode = 0
+offset_left = 560.0
+offset_top = 304.0
+offset_right = 744.0
+offset_bottom = 368.0
+texture_normal = SubResource("GradientTexture2D_nk4q4")
+texture_pressed = SubResource("GradientTexture2D_ub78k")
+texture_hover = SubResource("GradientTexture2D_8bhp0")
+
+[node name="Label" type="Label" parent="QuitButton" unique_id=1887469297]
+layout_mode = 0
+offset_left = -4.0
+offset_right = 188.0
+offset_bottom = 72.0
+text = "结束游戏"
+label_settings = SubResource("LabelSettings_ub78k")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="QuitButton" to="." method="_on_quit_button_pressed"]
