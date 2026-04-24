@@ -8,6 +8,8 @@ var drop_armed: bool = false
 var pending_drop_click: bool = false
 # 变量：开始拖拽时的鼠标全局位置，用于区分点击与拖拽释放。
 var drag_start_mouse_pos: Vector2 = Vector2.ZERO
+# 变量：当前拖拽时实际锁定的局部抓取点。
+var drag_grab_local_pos: Vector2 = Vector2.ZERO
 
 # 常量：首按后释放时，超过该位移判定为“拖拽释放”（像素）。
 const DRAG_RELEASE_DISTANCE: float = 14.0
@@ -20,14 +22,25 @@ func _init() -> void:
 func enter() -> void:
 	if not card:
 		return
+	# 说明：进入拖拽时先停止位置与旋转补间，避免上一状态 Tween 继续作用造成点击瞬间 Y 轴漂移。
+	if card.has_method("stop_position_rotation_tweens"):
+		card.stop_position_rotation_tweens()
 	if card.has_method("refresh_visual_z_index"):
 		card.refresh_visual_z_index()
 	drop_armed = false
 	pending_drop_click = false
 	drag_start_mouse_pos = card.get_global_mouse_position()
-	# 说明：用“卡牌中心 - 鼠标点”的偏移，保证拖拽过程中抓取点不跳动。
-	drag_offset = (card.global_position + card.pivot_offset) - drag_start_mouse_pos
-	card.tween_scale_to(Vector2(1.1, 1.1), 0.15, Tween.TRANS_SINE, Tween.EASE_OUT)
+	if card.has_method("get_drag_grab_local_position"):
+		drag_grab_local_pos = card.get_drag_grab_local_position()
+	else:
+		drag_grab_local_pos = card.pivot_offset
+	# 说明：拖拽时直接让“实际点击点”贴住鼠标，不再保留额外全局偏移，避免误差持续表现为左上偏移。
+	drag_offset = Vector2.ZERO
+	_sync_card_position_to_mouse()
+	var drag_target_scale = card.scale
+	if drag_target_scale.x < 1.1 or drag_target_scale.y < 1.1:
+		drag_target_scale = Vector2(1.1, 1.1)
+	card.tween_scale_to(drag_target_scale, 0.15, Tween.TRANS_SINE, Tween.EASE_OUT)
 	if card.has_method("tween_rotation_to"):
 		card.tween_rotation_to(0.0, 0.12, Tween.TRANS_SINE, Tween.EASE_OUT)
 
@@ -35,16 +48,22 @@ func enter() -> void:
 func update(_delta: float) -> void:
 	if not card:
 		return
-
-	var mouse_pos = card.get_global_mouse_position()
-	var hand_area = card.get_parent() as Control
-	if hand_area == null:
-		return
-	card.position = mouse_pos + drag_offset - hand_area.global_position - card.pivot_offset
+	_sync_card_position_to_mouse()
 
 	var is_over = card.check_destroy_area_overlap()
 	for area in card.get_tree().get_nodes_in_group("destroy_area"):
 		area.modulate = Color(1.3, 1.3, 1.3) if is_over else Color.WHITE
+
+# 功能：将卡牌位置同步到鼠标当前位置，用于消除点击进入拖拽时的单帧位移抖动。
+func _sync_card_position_to_mouse() -> void:
+	var mouse_pos = card.get_global_mouse_position()
+	var hand_area = card.get_parent() as Control
+	if hand_area == null:
+		return
+	var target_global = mouse_pos + drag_offset
+	var grab_offset = (drag_grab_local_pos - card.pivot_offset) * card.scale
+	grab_offset = grab_offset.rotated(card.rotation)
+	card.position = target_global - hand_area.global_position - card.pivot_offset - grab_offset
 
 # 功能：退出拖拽状态时清理销毁区高亮。
 func exit() -> void:

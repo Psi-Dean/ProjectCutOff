@@ -61,6 +61,8 @@ var layout_anchor_rotation: float = 0.0
 var layout_anchor_ready: bool = false
 # 变量：卡牌基础层级（由手牌排序确定，悬停结束后回到该层级）。
 var base_z_index: int = 0
+# 变量：最近一次左键按下时的卡牌局部坐标，用于拖拽时精确保持点击点。
+var last_press_local_position: Vector2 = Vector2.ZERO
 
 # ===== 卡牌阴影可调参数 =====
 @export_group("卡牌阴影")
@@ -206,6 +208,11 @@ func setup_card(data: CardData, index: int) -> void:
 
 # 功能：将控件级输入转发给当前状态。
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
+			# 说明：_gui_input 的事件坐标不是稳定的卡牌局部坐标，这里直接读取当前局部鼠标位置，避免拖拽锚点错位。
+			cache_press_local_position(get_local_mouse_position())
 	if state_machine and state_machine.current_state:
 		(state_machine.current_state as CutoffCardState).on_gui_input(event)
 
@@ -314,6 +321,19 @@ func stop_position_rotation_tweens() -> void:
 		pos_y_tween.kill()
 	if rot_tween and rot_tween.is_valid():
 		rot_tween.kill()
+
+# 功能：缓存最近一次按下时的局部点击坐标，供拖拽状态保持抓取点使用。
+func cache_press_local_position(local_pos: Vector2) -> void:
+	last_press_local_position = local_pos
+
+# 功能：获取拖拽使用的局部抓取点；若无有效缓存则退回到卡牌轴心。
+func get_drag_grab_local_position() -> Vector2:
+	var local_pos = last_press_local_position
+	if size.x <= 0.0 or size.y <= 0.0:
+		return pivot_offset
+	local_pos.x = clampf(local_pos.x, 0.0, size.x)
+	local_pos.y = clampf(local_pos.y, 0.0, size.y)
+	return local_pos
 
 # 功能：设置卡牌基础层级，并立即刷新可视层级。
 func set_base_z_index(value: int) -> void:
