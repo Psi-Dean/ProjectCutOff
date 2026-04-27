@@ -40,8 +40,7 @@ var current_money: float = 50.00
 # 购买目标价格。
 var goal_price: float = 40.00
 
-# 基础卡池（从资源目录加载）。
-var basic_cards_deck: Array[CardData] = []
+
 # 开局发牌数量。
 var setup_cards_limit: int = 6
 # 每回合补牌数量。
@@ -102,7 +101,6 @@ const HAND_LAYOUT_TIME: float = 0.35
 
 # 初始化卡池、手牌显示和各类 UI 状态。
 func _ready() -> void:
-	load_card_resources()
 	setup_card_deck()
 	random_draw_cards()
 	check_player_money()
@@ -543,20 +541,23 @@ func reshuffle_discard_into_deck() -> void:
 	for card_data in discard_pile:
 		player_deck.append(card_data)
 	discard_pile.clear()
-# 根据基础卡牌池basic_cards_deck，初始化本局玩家牌库
+# 获取玩家卡牌构筑界面选择卡牌池
 # basic_cards_deck基础卡牌池不会在对局中消耗
 # player_deck作为玩家本局牌库，在对局中抽牌时会被消耗
-# 当前版本允许玩家从基础卡牌池重复抽卡
-# TODO 后续改为从卡牌构筑/选牌界面加入player_deck
+# 如果玩家卡牌构筑为空，则从基础卡牌随机抽取
+# TODO 后续需要优化删除该分支
 func setup_card_deck() -> void:
-	if basic_cards_deck.is_empty():
-		return
-	player_deck = []
-	for i in range(player_setup_limit):
-		var randomidx = randi_range(0, basic_cards_deck.size() -1)
-		player_deck.append(basic_cards_deck[randomidx].duplicate(true))
+	if not RunData.player_deck_build.is_empty():
+		player_deck = RunData.player_deck_build.duplicate()
+	else:
+		if CardDatabase.basic_cards_deck.is_empty():
+			return
+		player_deck = []
+		for i in range(player_setup_limit):
+			var randomidx = randi_range(0, CardDatabase.basic_cards_deck.size() -1)
+			player_deck.append(CardDatabase.basic_cards_deck[randomidx].duplicate(true))
 	play_state =  GameState.PlayState.GAME_START
-# 播放心态爆表提示效果
+	# 播放心态爆表提示效果
 func play_risk_warning_effect() -> void:
 	if mindset_warning_tween:
 		return
@@ -579,14 +580,3 @@ func calculate_draw_limit() -> int:
 	var card_space = hand_limit - player_cards.size()
 	var current_draw_limit = cards_limit if cards_limit < card_space else card_space
 	return current_draw_limit if current_draw_limit > 0 else 0
-# 从资源目录加载所有卡牌资源到基础卡池。
-func load_card_resources() -> void:
-	var cards_path = "res://resources/cards/"
-	var files = DirAccess.get_files_at(cards_path)
-	files.sort()
-	for file_name in files:
-		if file_name.ends_with(".tres"):
-			var card_res_path = cards_path.path_join(file_name)
-			var data = load(card_res_path)
-			if data is CardData:
-				basic_cards_deck.append(data)

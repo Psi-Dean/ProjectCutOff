@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://c4m64w6bwpflg"]
+
+[ext_resource type="FontFile" uid="uid://cbhh3tl5kxp4p" path="res://assets/font/MiSans-Demibold.ttf" id="1_fesbe"]
+[ext_resource type="Script" uid="uid://ckbkouhokqkq1" path="res://scenes/game_deck_build.gd" id="1_yulnj"]
+
+[sub_resource type="Gradient" id="Gradient_jra1q"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_yulnj"]
+gradient = SubResource("Gradient_jra1q")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_ub78k"]
+colors = PackedColorArray(0.15294118, 0.30588236, 0.29411766, 1, 0.42122906, 0.20253292, 0.15046692, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_aljnh"]
+gradient = SubResource("Gradient_ub78k")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_ev1um"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8tknn"]
+gradient = SubResource("Gradient_ev1um")
+width = 184
+
+[sub_resource type="Gradient" id="Gradient_8bhp0"]
+colors = PackedColorArray(0.42122906, 0.20253292, 0.15046692, 1, 0.41960785, 0.20392157, 0.14901961, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wpxy7"]
+gradient = SubResource("Gradient_8bhp0")
+width = 184
+
+[sub_resource type="LabelSettings" id="LabelSettings_enj0n"]
+font = ExtResource("1_fesbe")
+
+[node name="GameDeckBuild" type="Control" unique_id=324408116]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yulnj")
+
+[node name="ConfrimBuildButtonBack" type="TextureRect" parent="." unique_id=1269549902]
+layout_mode = 0
+offset_left = 558.0
+offset_top = 656.0
+offset_right = 742.0
+offset_bottom = 720.0
+texture = SubResource("GradientTexture2D_yulnj")
+
+[node name="ConfirmBuildButton" type="TextureButton" parent="." unique_id=835325097]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -92.0
+offset_top = -75.0
+offset_right = 92.0
+offset_bottom = -11.0
+grow_horizontal = 2
+grow_vertical = 0
+texture_normal = SubResource("GradientTexture2D_aljnh")
+texture_pressed = SubResource("GradientTexture2D_8tknn")
+texture_hover = SubResource("GradientTexture2D_wpxy7")
+
+[node name="Label" type="Label" parent="ConfirmBuildButton" unique_id=169015243]
+layout_mode = 0
+offset_left = -4.0
+offset_right = 188.0
+offset_bottom = 72.0
+text = "确认卡牌"
+label_settings = SubResource("LabelSettings_enj0n")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardPoolContainer" type="HBoxContainer" parent="." unique_id=1143802578]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_right = 600.0
+offset_bottom = 200.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="PlayerDeckContainer" type="HBoxContainer" parent="." unique_id=914337092]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 210.0
+offset_right = 600.0
+offset_bottom = 410.0
+grow_horizontal = 2
+
+[connection signal="pressed" from="ConfirmBuildButton" to="." method="_on_confirm_build_button_pressed"]

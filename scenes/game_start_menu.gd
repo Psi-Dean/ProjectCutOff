@@ -1,7 +1,7 @@
 extends Control
 
 func _on_start_button_pressed() -> void:
-	GameFlow.switch_to_game_play_scene()
+	GameFlow.switch_to_game_deck_build_scene()
 
 
 func _on_quit_button_pressed() -> void:

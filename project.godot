@@ -18,6 +18,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameFlow="*uid://bu4fm2pu4oea7"
+RunData="*uid://cmrhviv0u3pl0"
+CardDatabase="*uid://b0bnw7v6fpmln"
 
 [display]
 
@@ -27,7 +29,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/nodetree_v2/plugin.cfg", "res://addons/script-ide/plugin.cfg")
+enabled=PackedStringArray()
 
 [physics]
 
